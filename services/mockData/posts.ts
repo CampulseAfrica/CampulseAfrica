@@ -1,10 +1,10 @@
-import { Post } from '../types';
-import { mockUsers, mockUniversities } from '../mockDb';
+import { Post } from '../../types';
+import { mockUsers, mockUniversities } from './users';
 
 export const mockPosts: Post[] = [
   {
     id: 'post-1',
-    user: mockUsers[0],
+    user: Object.values(mockUsers)[0 % Object.values(mockUsers).length],
     content: 'The new engineering lab is finally open! 🎉 Anyone else excited about the robotics equipment? This semester is going to be amazing. #Engineering #UNILAG #Robotics',
     images: ['https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600'],
     hashtags: ['Engineering', 'UNILAG', 'Robotics'],
@@ -20,7 +20,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-2',
-    user: mockUsers[1],
+    user: Object.values(mockUsers)[1 % Object.values(mockUsers).length],
     content: 'The new engineering lab is finally open! 🎉 Anyone else excited about the robotics equipment? This semester is going to be amazing. #Engineering #UNILAG #Robotics',
     images: ['https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600'],
     hashtags: ['Engineering', 'UNILAG', 'Robotics'],
@@ -36,7 +36,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-3',
-    user: mockUsers[2],
+    user: Object.values(mockUsers)[2 % Object.values(mockUsers).length],
     content: 'Congratulations on the new student as they begin their journey in the University of Benin #Matriculation #happy newyear #uniben',
     images: [],
     hashtags: ['Matriculation', 'happy newyear', 'uniben'],
@@ -52,7 +52,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-4',
-    user: mockUsers[3],
+    user: Object.values(mockUsers)[3 % Object.values(mockUsers).length],
     content: "Can't believe we finally got to see akwaman on his tour to different school. The guy is exceptionally funny. He is in the art department right now. #Comedy#art #tour",
     images: ['https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=600'],
     hashtags: ['Comedy', 'art', 'tour'],
@@ -68,7 +68,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-5',
-    user: mockUsers[4],
+    user: Object.values(mockUsers)[4 % Object.values(mockUsers).length],
     content: 'Breaking: SUG elections postponed to next week. The electoral committee cited logistic concerns. More details coming soon. #SUGElections #ABU #CampusNews',
     images: [],
     hashtags: ['SUGElections', 'ABU', 'CampusNews'],
@@ -84,7 +84,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-6',
-    user: mockUsers[5],
+    user: Object.values(mockUsers)[5 % Object.values(mockUsers).length],
     content: 'He came to my school too, we had the maddest fun i can think of. Was defintely worth my money#comedy#art #tour',
     images: ['https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600'],
     hashtags: ['comedy', 'art', 'tour'],
@@ -100,7 +100,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-7',
-    user: mockUsers[6],
+    user: Object.values(mockUsers)[6 % Object.values(mockUsers).length],
     content: 'Please if you are in portharcourt or going to school there, please i heard the roads are blocked. Abeg somebody should tell me so i know when i start leaving my house.',
     images: ['https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600'],
     hashtags: [],
@@ -116,7 +116,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-8',
-    user: mockUsers[7],
+    user: Object.values(mockUsers)[7 % Object.values(mockUsers).length],
     content: "Please hope this new virus outbreak isn't going to affect this new semester. i don't want what happened in 2020 to repeat itself oh. Please who has an information on the outbreak",
     images: [],
     hashtags: [],
@@ -132,7 +132,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-9',
-    user: mockUsers[8],
+    user: Object.values(mockUsers)[8 % Object.values(mockUsers).length],
     content: 'Definitely beginning this new semester with a fresh attitude. Last semester was just a dud. Just like the new campus librabry #Uniabuja#Feshstart #300lwl',
     images: ['https://images.unsplash.com/photo-1568667256549-094345857637?w=600'],
     hashtags: ['Uniabuja', 'Feshstart', '300lwl'],
@@ -148,7 +148,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-10',
-    user: mockUsers[4],
+    user: Object.values(mockUsers)[9 % Object.values(mockUsers).length],
     content: 'My fellow students in OAU, they have started payment for hostel, if you want to get in a space earlier, please reach out to me with your fees ofcourse. #OAU #hostel #campus',
     images: [],
     hashtags: ['OAU', 'hostel', 'campus'],
@@ -165,7 +165,7 @@ export const mockPosts: Post[] = [
   // Additional posts for scroll depth
   {
     id: 'post-11',
-    user: mockUsers[9],
+    user: Object.values(mockUsers)[10 % Object.values(mockUsers).length],
     content: 'Just published a new research paper on neural network optimization. Check it out on ResearchGate! #AI #Research #UNN #CompSci',
     images: [],
     hashtags: ['AI', 'Research', 'UNN', 'CompSci'],
@@ -181,7 +181,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-12',
-    user: mockUsers[10],
+    user: Object.values(mockUsers)[11 % Object.values(mockUsers).length],
     content: 'Pharmacy students — the new drug interaction database is available in the library portal. Super helpful for our upcoming exams. #Pharmacy #UI',
     images: [],
     hashtags: ['Pharmacy', 'UI'],
@@ -197,7 +197,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-13',
-    user: mockUsers[11],
+    user: Object.values(mockUsers)[12 % Object.values(mockUsers).length],
     content: 'The agric-tech hackathon results are out! Our team won 2nd place 🎉🌱 Thanks to everyone who supported us. #AgriTech #OAU #Innovation',
     images: ['https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=600'],
     hashtags: ['AgriTech', 'OAU', 'Innovation'],
@@ -213,7 +213,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-14',
-    user: mockUsers[13],
+    user: Object.values(mockUsers)[13 % Object.values(mockUsers).length],
     content: 'The new electrical engineering workshop is incredible. Finally we can work on real projects instead of just theory. #UNILORIN #Engineering #Practical',
     images: [],
     hashtags: ['UNILORIN', 'Engineering', 'Practical'],
@@ -229,7 +229,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-15',
-    user: mockUsers[14],
+    user: Object.values(mockUsers)[14 % Object.values(mockUsers).length],
     content: 'Won the inter-faculty moot court competition! So grateful for my team and our faculty advisors. #Law #UNICAL #MootCourt #Victory',
     images: [],
     hashtags: ['Law', 'UNICAL', 'MootCourt', 'Victory'],
@@ -245,7 +245,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-16',
-    user: mockUsers[15],
+    user: Object.values(mockUsers)[15 % Object.values(mockUsers).length],
     content: 'Just released version 2.0 of my open-source campus management tool. Built with React Native + Supabase. Link in bio! #OpenSource #CU #Dev',
     images: [],
     hashtags: ['OpenSource', 'CU', 'Dev'],
@@ -261,7 +261,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-17',
-    user: mockUsers[16],
+    user: Object.values(mockUsers)[16 % Object.values(mockUsers).length],
     content: 'The astronomy club is hosting a stargazing event this Friday at the sports complex. Telescopes provided! Everyone welcome. #UNIJOS #Astronomy #Stars',
     images: ['https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600'],
     hashtags: ['UNIJOS', 'Astronomy', 'Stars'],
@@ -277,7 +277,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-18',
-    user: mockUsers[17],
+    user: Object.values(mockUsers)[17 % Object.values(mockUsers).length],
     content: 'Important: Student visa application deadline for exchange program has been extended to next month. Don\'t miss out! #BUK #Exchange #StudyAbroad',
     images: [],
     hashtags: ['BUK', 'Exchange', 'StudyAbroad'],
@@ -293,7 +293,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-19',
-    user: mockUsers[18],
+    user: Object.values(mockUsers)[18 % Object.values(mockUsers).length],
     content: 'Clinical rotation starts next week! Nervous but excited. Any tips from senior nursing students? #UNIUYO #Nursing #Clinical',
     images: [],
     hashtags: ['UNIUYO', 'Nursing', 'Clinical'],
@@ -309,7 +309,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-20',
-    user: mockUsers[19],
+    user: Object.values(mockUsers)[19 % Object.values(mockUsers).length],
     content: 'The robotics club just received a donation of 5 new Arduino kits and 3 Raspberry Pi 5s! Workshop schedule coming soon. #FUTA #Robotics #Tech',
     images: ['https://images.unsplash.com/photo-1518770660439-4636190af475?w=600'],
     hashtags: ['FUTA', 'Robotics', 'Tech'],
@@ -326,7 +326,7 @@ export const mockPosts: Post[] = [
   // Posts 21-30
   {
     id: 'post-21',
-    user: mockUsers[20],
+    user: Object.values(mockUsers)[20 % Object.values(mockUsers).length],
     content: 'The campus media center just got upgraded with new equipment. Any student journalist can book sessions! #UNILAG #Media #Journalism',
     images: [],
     hashtags: ['UNILAG', 'Media', 'Journalism'],
@@ -342,7 +342,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-22',
-    user: mockUsers[21],
+    user: Object.values(mockUsers)[21 % Object.values(mockUsers).length],
     content: 'Medical students be like: 8am class, 3pm lab, 7pm study group, 11pm cramming. Repeat. #MedSchool #UNN #Grind',
     images: [],
     hashtags: ['MedSchool', 'UNN', 'Grind'],
@@ -358,7 +358,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-23',
-    user: mockUsers[22],
+    user: Object.values(mockUsers)[22 % Object.values(mockUsers).length],
     content: 'The environmental science department is organizing a campus clean-up drive this Saturday. Volunteers needed! #ABU #GreenCampus #Volunteer',
     images: ['https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=600'],
     hashtags: ['ABU', 'GreenCampus', 'Volunteer'],
@@ -374,7 +374,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-24',
-    user: mockUsers[23],
+    user: Object.values(mockUsers)[23 % Object.values(mockUsers).length],
     content: 'The economics department seminar on cryptocurrency regulation was eye-opening. Nigeria needs clear frameworks. #UI #Economics #Crypto',
     images: [],
     hashtags: ['UI', 'Economics', 'Crypto'],
@@ -390,7 +390,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-25',
-    user: mockUsers[24],
+    user: Object.values(mockUsers)[24 % Object.values(mockUsers).length],
     content: 'Lab results season is so stressful 😭 Praying my biochemistry practical marks are decent. #UNILORIN #Biochem #LabLife',
     images: [],
     hashtags: ['UNILORIN', 'Biochem', 'LabLife'],
@@ -407,7 +407,7 @@ export const mockPosts: Post[] = [
   // BIU Posts
   {
     id: 'post-26',
-    user: mockUsers[25], // David Omoregie
+    user: Object.values(mockUsers)[25 % Object.values(mockUsers).length], // David Omoregie
     content: 'Just launched my new startup on campus today! If you need quick deliveries within BIU, hit me up. First 10 people get 50% off delivery fee. #BIU #Entrepreneur #CampusDelivery',
     images: ['https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600'],
     hashtags: ['BIU', 'Entrepreneur', 'CampusDelivery'],
@@ -423,7 +423,7 @@ export const mockPosts: Post[] = [
   },
   {
     id: 'post-27',
-    user: mockUsers[25],
+    user: Object.values(mockUsers)[26 % Object.values(mockUsers).length],
     content: 'Chapel service was lit today. The guest minister really broke down the word. Who else was blessed? #BIU #ChapelService #Faith',
     images: [],
     hashtags: ['BIU', 'ChapelService', 'Faith'],
@@ -440,7 +440,7 @@ export const mockPosts: Post[] = [
   // Posts 28-50 (abbreviated for scroll depth)
   ...Array.from({ length: 25 }, (_, i) => ({
     id: `post-${26 + i}`,
-    user: mockUsers[i % mockUsers.length],
+    user: Object.values(mockUsers)[27 % Object.values(mockUsers).length],
     content: [
       'Campus WiFi finally working properly today! Am I dreaming? 😂',
       'Anyone selling second-hand textbooks for next semester?',
@@ -478,6 +478,6 @@ export const mockPosts: Post[] = [
     userVote: null,
     isBookmarked: false,
     createdAt: new Date(Date.now() - (i + 1) * 3600000 * 2).toISOString(),
-    university: mockUsers[i % mockUsers.length].university.name,
+    university: Object.values(mockUsers)[i % Object.values(mockUsers).length].university.name,
   })),
 ];

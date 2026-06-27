@@ -11,7 +11,7 @@ import { useRouter } from 'expo-router';
 import { colors, spacing, borderRadius } from '../../theme';
 import { useAuthStore } from '../../store';
 import { authService } from '../../services';
-import { mockUsers } from '../../services/mockDb';
+
 
 export default function OTPScreen() {
   const router = useRouter();
@@ -41,7 +41,10 @@ export default function OTPScreen() {
     const isValid = await authService.verifyOtp(otpString);
     if (isValid) {
       // Log the user in with mock data
-      setUser(Object.values(mockUsers)[0]);
+      const user = await authService.getCurrentUser();
+      if (user) {
+        setUser(user);
+      }
       router.replace('/(tabs)/home');
     }
   };

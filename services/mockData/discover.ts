@@ -1,4 +1,4 @@
-import { TrendingTopic, NewsItem, Job, AcademicMaterial, CampusEvent, FeaturedNews } from '../types';
+import { TrendingTopic, NewsItem, Job, AcademicMaterial, CampusEvent, FeaturedNews } from '../../types';
 
 export const mockFeaturedNews: FeaturedNews = {
   id: 'featured-1',

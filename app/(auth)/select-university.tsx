@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,27 +9,53 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Image } from 'expo-image';
-import { Search, ChevronRight } from 'lucide-react-native';
+import { Search } from 'lucide-react-native';
 import { colors, spacing, borderRadius } from '../../theme';
 import { useAuthStore } from '../../store';
-import { mockUniversities } from '../../services/mockDb';
+import { authService } from '../../services';
 import { University } from '../../types';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { Button } from '../../components/ui/Button';
 
 export default function SelectUniversityScreen() {
   const router = useRouter();
   const { setGuest } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [universities, setUniversities] = useState<University[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const filteredUniversities = Object.values(mockUniversities).filter(
+  useEffect(() => {
+    let isMounted = true;
+    authService.getUniversities().then((data) => {
+      if (isMounted) {
+        setUniversities(data);
+        setLoading(false);
+      }
+    });
+    return () => { isMounted = false; };
+  }, []);
+
+  const filteredUniversities = universities.filter(
     (uni) =>
       uni.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       uni.shortName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleSelectUniversity = (university: University) => {
-    setGuest(university);
-    router.replace('/(tabs)/home');
+  const handleToggleSelect = (university: University) => {
+    if (selectedId === university.id) {
+      setSelectedId(null);
+    } else {
+      setSelectedId(university.id);
+    }
+  };
+
+  const handleConfirmSelection = () => {
+    const selectedUni = universities.find(u => u.id === selectedId);
+    if (selectedUni) {
+      setGuest(selectedUni);
+      router.replace('/(tabs)/home');
+    }
   };
 
   return (
@@ -43,10 +69,10 @@ export default function SelectUniversityScreen() {
 
       <View style={styles.searchContainer}>
         <View style={styles.searchInputWrapper}>
-          <Search 
-            size={20} 
-            color={colors.textTertiary} 
-            style={styles.searchIcon} 
+          <Search
+            size={20}
+            color={colors.textTertiary}
+            style={styles.searchIcon}
           />
           <TextInput
             style={styles.searchInput}
@@ -58,53 +84,75 @@ export default function SelectUniversityScreen() {
         </View>
       </View>
 
-      <FlatList
-        data={filteredUniversities}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => {
-          // Placeholder image for now. You can replace this with actual university images later.
-          const placeholderImage = 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=300&auto=format&fit=crop';
-          
-          return (
-            <Pressable
-              style={({ pressed }) => [
-                styles.universityItem,
-                pressed && styles.universityItemPressed,
-              ]}
-              onPress={() => handleSelectUniversity(item)}
-            >
-              <Image 
-                source={item.image ? item.image : { uri: placeholderImage }} 
-                style={styles.universityImage} 
-                contentFit="cover"
-                transition={200}
-              />
+      {loading ? (
+        <View style={styles.listContent}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <View key={i} style={[styles.universityItem, { padding: spacing.md }]}>
+              <Skeleton width={48} height={48} borderRadius={24} />
               <View style={styles.universityInfo}>
-                <Text style={styles.universityName} numberOfLines={1}>{item.name}</Text>
-                <Text style={styles.universityLocation} numberOfLines={1}>{item.location}</Text>
+                <Skeleton width="60%" height={16} style={{ marginBottom: 4 }} />
+                <Skeleton width="40%" height={14} />
               </View>
-              <View style={styles.rightContent}>
-                <View style={styles.shortNameBadge}>
-                  <Text style={styles.shortNameText}>{item.shortName}</Text>
+            </View>
+          ))}
+        </View>
+      ) : (
+        <FlatList
+          data={filteredUniversities}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => {
+            const isSelected = item.id === selectedId;
+            return (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.universityItem,
+                  isSelected && styles.universityItemSelected,
+                  pressed && !isSelected && styles.universityItemPressed,
+                ]}
+                onPress={() => handleToggleSelect(item)}
+              >
+                <View style={styles.universityInfo}>
+                  <Text style={styles.universityName} numberOfLines={1}>{item.name}</Text>
+                  <Text style={styles.universityLocation} numberOfLines={1}>{item.location}</Text>
                 </View>
-                <ChevronRight size={20} color={colors.textTertiary} />
-              </View>
-            </Pressable>
-          );
-        }}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-      />
+                <View style={styles.rightContent}>
+                  <View style={styles.shortNameBadge}>
+                    <Text style={styles.shortNameText}>{item.shortName}</Text>
+                  </View>
+                </View>
+              </Pressable>
+            );
+          }}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyTitle}>No universities found</Text>
+            </View>
+          }
+        />
+      )}
 
-      <View style={styles.footer}>
-        <Pressable onPress={() => router.push('/(auth)/sign-up')}>
-          <Text style={styles.footerText}>
-            Want to participate?{' '}
-            <Text style={styles.footerLink}>Create an account</Text>
-          </Text>
-        </Pressable>
-      </View>
+      {selectedId ? (
+        <View style={styles.footer}>
+          <Button
+            title="Confirm Selection"
+            onPress={handleConfirmSelection}
+            fullWidth
+            size="lg"
+          />
+        </View>
+      ) : (
+        <View style={styles.footer}>
+          <Pressable onPress={() => router.push('/(auth)/sign-up')}>
+            <Text style={styles.footerText}>
+              Want to participate?{' '}
+              <Text style={styles.footerLink}>Create an account</Text>
+            </Text>
+          </Pressable>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -116,7 +164,7 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: spacing['2xl'],
-    paddingTop: spacing['4xl'],
+    paddingTop: spacing['4xl'] * 0.5,
     paddingBottom: spacing.xl,
   },
   title: {
@@ -133,7 +181,7 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     paddingHorizontal: spacing['2xl'],
-    paddingBottom: spacing['2xl'],
+    paddingBottom: spacing['md'],
   },
   searchInputWrapper: {
     flexDirection: 'row',
@@ -176,16 +224,17 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     transform: [{ scale: 0.98 }],
   },
-  universityImage: {
-    width: 70,
-    alignSelf: 'stretch',
-    backgroundColor: colors.border,
+  universityItemSelected: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primary + '10',
+    elevation: 0,
+    shadowOpacity: 0,
+    transform: [{ scale: 0.98 }],
   },
   universityInfo: {
     flex: 1,
-    marginRight: spacing.sm,
     paddingVertical: spacing.lg,
-    paddingLeft: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
   universityName: {
     fontSize: 16,
@@ -205,7 +254,6 @@ const styles = StyleSheet.create({
     paddingRight: spacing.lg,
   },
   shortNameBadge: {
-    backgroundColor: colors.background,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.md,
@@ -216,11 +264,19 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '800',
     color: colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
   separator: {
     height: spacing.md,
+  },
+  emptyContainer: {
+    padding: spacing['2xl'],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.textSecondary,
   },
   footer: {
     padding: spacing['2xl'],

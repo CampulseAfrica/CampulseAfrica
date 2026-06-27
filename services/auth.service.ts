@@ -1,5 +1,5 @@
-import { User } from '../types';
-import { mockUsers } from './mockDb';
+import { User, University } from '../types';
+import { mockUsers, mockUniversities } from './mockDb';
 
 interface SignUpData {
   fullName: string;
@@ -62,5 +62,10 @@ export const authService = {
   async forgotPassword(email: string): Promise<boolean> {
     await delay(600);
     return true;
+  },
+
+  async getUniversities(): Promise<University[]> {
+    await delay(500);
+    return Object.values(mockUniversities);
   },
 };

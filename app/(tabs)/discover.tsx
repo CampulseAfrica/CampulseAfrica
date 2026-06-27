@@ -17,6 +17,7 @@ import { discoverService } from '../../services';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { CampulseLogo } from '../../components/ui/Logo';
 import { SearchIcon, TrendIcon } from '../../components/ui/Icons';
+import { EmptyState } from '../../components/ui/EmptyState';
 import { Bookmark } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 
@@ -94,18 +95,22 @@ function TrendingTab() {
       </View>
       
       <View style={styles.trendingList}>
-        {trending.map((topic) => (
-          <View key={topic.id} style={styles.trendingItem}>
-            <Text style={styles.trendingRank}>{topic.rank}</Text>
-            <View style={styles.trendingInfo}>
-              <Text style={styles.trendingHashtag}>{topic.hashtag}</Text>
-              <Text style={styles.trendingCount}>{topic.postsCount.toLocaleString()} posts</Text>
+        {trending.length === 0 ? (
+          <EmptyState icon="🔥" title="No trending topics" subtitle="Check back later" />
+        ) : (
+          trending.map((topic) => (
+            <View key={topic.id} style={styles.trendingItem}>
+              <Text style={styles.trendingRank}>{topic.rank}</Text>
+              <View style={styles.trendingInfo}>
+                <Text style={styles.trendingHashtag}>{topic.hashtag}</Text>
+                <Text style={styles.trendingCount}>{topic.postsCount.toLocaleString()} posts</Text>
+              </View>
+              {topic.isHot && (
+                <TrendIcon />
+              )}
             </View>
-            {topic.isHot && (
-              <TrendIcon />
-            )}
-          </View>
-        ))}
+          ))
+        )}
       </View>
       
       {/* Bottom padding for tab bar */}
@@ -144,23 +149,27 @@ function NewsTab() {
 
   return (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
-      {news.map((item) => (
-        <View key={item.id} style={styles.newsItem}>
-          <View style={styles.newsDate}>
-            <Text style={styles.newsDateText}>{item.date}</Text>
-          </View>
-          <View style={styles.newsContent}>
-            <Text style={styles.newsTitle} numberOfLines={2}>
-              {item.title}
-            </Text>
-          </View>
-          {item.isNew && (
-            <View style={styles.newBadge}>
-              <Text style={styles.newBadgeText}>New</Text>
+      {news.length === 0 ? (
+        <EmptyState icon="📰" title="No news updates" subtitle="Check back later for campus news" />
+      ) : (
+        news.map((item) => (
+          <View key={item.id} style={styles.newsItem}>
+            <View style={styles.newsDate}>
+              <Text style={styles.newsDateText}>{item.date}</Text>
             </View>
-          )}
-        </View>
-      ))}
+            <View style={styles.newsContent}>
+              <Text style={styles.newsTitle} numberOfLines={2}>
+                {item.title}
+              </Text>
+            </View>
+            {item.isNew && (
+              <View style={styles.newBadge}>
+                <Text style={styles.newBadgeText}>New</Text>
+              </View>
+            )}
+          </View>
+        ))
+      )}
       <View style={{ height: 100 }} />
     </ScrollView>
   );
@@ -202,54 +211,66 @@ function JobsTab() {
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
       <Text style={styles.sectionTitle}>Job Opportunities</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-        {jobs.map((job) => (
-          <View key={job.id} style={styles.jobCard}>
-            <ImageBackground
-              source={{ uri: job.image }}
-              style={styles.jobImage}
-              imageStyle={styles.jobImageStyle}
-            >
-              <View style={styles.jobOverlay}>
-                <View style={styles.jobCategory}>
-                  <Text style={styles.jobCategoryText}>{job.category}</Text>
-                </View>
-                <View style={styles.jobBottom}>
-                  <Text style={styles.jobTitle} numberOfLines={1}>{job.title}</Text>
-                  <Text style={styles.jobDesc} numberOfLines={2}>{job.description}</Text>
-                  <Pressable style={styles.applyButton}>
-                    <Text style={styles.applyButtonText}>Apply For Job</Text>
-                  </Pressable>
-                </View>
-              </View>
-            </ImageBackground>
+        {jobs.length === 0 ? (
+          <View style={{ width: width - 48 }}>
+            <EmptyState icon="💼" title="No jobs available" subtitle="Check back later" />
           </View>
-        ))}
+        ) : (
+          jobs.map((job) => (
+            <View key={job.id} style={styles.jobCard}>
+              <ImageBackground
+                source={{ uri: job.image }}
+                style={styles.jobImage}
+                imageStyle={styles.jobImageStyle}
+              >
+                <View style={styles.jobOverlay}>
+                  <View style={styles.jobCategory}>
+                    <Text style={styles.jobCategoryText}>{job.category}</Text>
+                  </View>
+                  <View style={styles.jobBottom}>
+                    <Text style={styles.jobTitle} numberOfLines={1}>{job.title}</Text>
+                    <Text style={styles.jobDesc} numberOfLines={2}>{job.description}</Text>
+                    <Pressable style={styles.applyButton}>
+                      <Text style={styles.applyButtonText}>Apply For Job</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              </ImageBackground>
+            </View>
+          ))
+        )}
       </ScrollView>
 
       <Text style={[styles.sectionTitle, { marginTop: spacing['2xl'] }]}>Study Abroad</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-        {abroad.map((job) => (
-          <View key={job.id} style={styles.jobCard}>
-            <ImageBackground
-              source={{ uri: job.image }}
-              style={styles.jobImage}
-              imageStyle={styles.jobImageStyle}
-            >
-              <View style={styles.jobOverlay}>
-                <View style={styles.jobCategory}>
-                  <Text style={styles.jobCategoryText}>{job.category}</Text>
-                </View>
-                <View style={styles.jobBottom}>
-                  <Text style={styles.jobTitle} numberOfLines={1}>{job.title}</Text>
-                  <Text style={styles.jobDesc} numberOfLines={2}>{job.description}</Text>
-                  <Pressable style={styles.applyButton}>
-                    <Text style={styles.applyButtonText}>Learn More</Text>
-                  </Pressable>
-                </View>
-              </View>
-            </ImageBackground>
+        {abroad.length === 0 ? (
+          <View style={{ width: width - 48 }}>
+            <EmptyState icon="✈️" title="No opportunities found" subtitle="Check back later" />
           </View>
-        ))}
+        ) : (
+          abroad.map((job) => (
+            <View key={job.id} style={styles.jobCard}>
+              <ImageBackground
+                source={{ uri: job.image }}
+                style={styles.jobImage}
+                imageStyle={styles.jobImageStyle}
+              >
+                <View style={styles.jobOverlay}>
+                  <View style={styles.jobCategory}>
+                    <Text style={styles.jobCategoryText}>{job.category}</Text>
+                  </View>
+                  <View style={styles.jobBottom}>
+                    <Text style={styles.jobTitle} numberOfLines={1}>{job.title}</Text>
+                    <Text style={styles.jobDesc} numberOfLines={2}>{job.description}</Text>
+                    <Pressable style={styles.applyButton}>
+                      <Text style={styles.applyButtonText}>Learn More</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              </ImageBackground>
+            </View>
+          ))
+        )}
       </ScrollView>
       <View style={{ height: 100 }} />
     </ScrollView>
@@ -282,26 +303,30 @@ function AcademicTab() {
   return (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
       <Text style={styles.sectionTitle}>Study Materials</Text>
-      {materials.map((item) => (
-        <Pressable key={item.id} style={styles.academicCard}>
-          <ImageBackground
-            source={{ uri: item.image }}
-            style={styles.academicImage}
-            imageStyle={styles.academicImageStyle}
-          >
-            <View style={styles.academicOverlay}>
-              <View>
-                <Text style={styles.academicCourseCode}>{item.courseCode}</Text>
-                <Text style={styles.academicTitle}>{item.title}</Text>
+      {materials.length === 0 ? (
+        <EmptyState icon="📚" title="No materials available" subtitle="Check back later" />
+      ) : (
+        materials.map((item) => (
+          <Pressable key={item.id} style={styles.academicCard}>
+            <ImageBackground
+              source={{ uri: item.image }}
+              style={styles.academicImage}
+              imageStyle={styles.academicImageStyle}
+            >
+              <View style={styles.academicOverlay}>
+                <View>
+                  <Text style={styles.academicCourseCode}>{item.courseCode}</Text>
+                  <Text style={styles.academicTitle}>{item.title}</Text>
+                </View>
+                <View style={styles.academicAuthor}>
+                  <Image source={{ uri: item.author.avatar }} style={styles.academicAvatar} />
+                  <Text style={styles.academicAuthorName}>{item.author.name}</Text>
+                </View>
               </View>
-              <View style={styles.academicAuthor}>
-                <Image source={{ uri: item.author.avatar }} style={styles.academicAvatar} />
-                <Text style={styles.academicAuthorName}>{item.author.name}</Text>
-              </View>
-            </View>
-          </ImageBackground>
-        </Pressable>
-      ))}
+            </ImageBackground>
+          </Pressable>
+        ))
+      )}
       <View style={{ height: 100 }} />
     </ScrollView>
   );
@@ -333,17 +358,21 @@ function EventsTab() {
   return (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
       <Text style={styles.sectionTitle}>Upcoming Events</Text>
-      {events.map((event) => (
-        <View key={event.id} style={styles.eventCard}>
-          <Image source={{ uri: event.image }} style={styles.eventImage} />
-          <View style={styles.eventInfo}>
-            <Text style={styles.eventTitle} numberOfLines={1}>{event.title}</Text>
-            <Text style={styles.eventDate}>{event.date} · {event.time}</Text>
-            <Text style={styles.eventLocation} numberOfLines={1}>{event.location}</Text>
+      {events.length === 0 ? (
+        <EmptyState icon="🎉" title="No upcoming events" subtitle="Check back later" />
+      ) : (
+        events.map((event) => (
+          <View key={event.id} style={styles.eventCard}>
+            <Image source={{ uri: event.image }} style={styles.eventImage} />
+            <View style={styles.eventInfo}>
+              <Text style={styles.eventTitle} numberOfLines={1}>{event.title}</Text>
+              <Text style={styles.eventDate}>{event.date} · {event.time}</Text>
+              <Text style={styles.eventLocation} numberOfLines={1}>{event.location}</Text>
+            </View>
+            <Text style={styles.eventBookmark}>🔖</Text>
           </View>
-          <Text style={styles.eventBookmark}>🔖</Text>
-        </View>
-      ))}
+        ))
+      )}
       <View style={{ height: 100 }} />
     </ScrollView>
   );

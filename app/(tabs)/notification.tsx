@@ -11,6 +11,7 @@ import { colors, spacing, borderRadius } from '../../theme';
 import { Notification } from '../../types';
 import { notificationService } from '../../services';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { EmptyState } from '../../components/ui/EmptyState';
 
 function NotificationItem({ item }: { item: Notification }) {
   return (
@@ -67,6 +68,13 @@ export default function NotificationScreen() {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
+          ListEmptyComponent={
+            <EmptyState
+              icon="🔔"
+              title="No notifications"
+              subtitle="You're all caught up!"
+            />
+          }
         />
       )}
     </SafeAreaView>

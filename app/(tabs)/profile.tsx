@@ -13,15 +13,16 @@ import { useRouter } from 'expo-router';
 import { colors, spacing, borderRadius } from '../../theme';
 import { useAuthStore } from '../../store';
 import { profileService } from '../../services';
-import { mockUsers } from '../../services/mockDb';
+
 import { Post, VoteType } from '../../types';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { EmptyState } from '../../components/ui/EmptyState';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { currentUser, isAuthenticated, isGuest } = useAuthStore();
 
-  const user = currentUser ?? Object.values(mockUsers)[0];
+  const user = currentUser;
   const [loading, setLoading] = useState(true);
   const [userPosts, setUserPosts] = useState<Post[]>([]);
 
@@ -56,6 +57,17 @@ export default function ProfileScreen() {
           <Pressable onPress={() => router.push('/(auth)/login')}>
             <Text style={styles.loginLink}>Already have an account? Log In</Text>
           </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!user) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={{ flex: 1, padding: spacing.lg }}>
+          <Skeleton width={100} height={100} borderRadius={50} style={{ alignSelf: 'center', marginTop: 100 }} />
+          <Skeleton width={150} height={20} style={{ alignSelf: 'center', marginTop: 20 }} />
         </View>
       </SafeAreaView>
     );
@@ -153,9 +165,11 @@ export default function ProfileScreen() {
               </Pressable>
             ))
           ) : (
-            <View style={styles.emptyPosts}>
-              <Text style={styles.emptyPostsText}>No posts yet</Text>
-            </View>
+            <EmptyState
+              icon="📭"
+              title="No posts yet"
+              subtitle="This user hasn't posted anything"
+            />
           )}
         </View>
       </ScrollView>

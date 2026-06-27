@@ -19,6 +19,7 @@ import { Post, VoteType, FeedTab } from '../../types';
 import { CampulseLogo } from '../../components/ui/Logo';
 import { SearchIcon, TrueIcon, MisleadingIcon, FalseIcon, CommentsIcon, ShareIcon } from '../../components/ui/Icons';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { EmptyState } from '../../components/ui/EmptyState';
 
 function PostCard({
   post,
@@ -255,6 +256,13 @@ export default function HomeScreen() {
               refreshing={refreshing}
               onRefresh={onRefresh}
               tintColor={colors.primary}
+            />
+          }
+          ListEmptyComponent={
+            <EmptyState
+              icon="📭"
+              title="No posts yet"
+              subtitle="Be the first to share something on campus!"
             />
           }
           ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}

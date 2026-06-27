@@ -2,9 +2,11 @@ import React, { useEffect, useRef } from 'react';
 import { View, Animated, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { colors, borderRadius } from '../../theme';
 
+import { DimensionValue } from 'react-native';
+
 interface SkeletonProps {
-  width?: number | string;
-  height?: number | string;
+  width?: DimensionValue;
+  height?: DimensionValue;
   style?: StyleProp<ViewStyle>;
   borderRadius?: number;
 }
