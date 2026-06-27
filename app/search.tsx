@@ -5,10 +5,11 @@ import {
   StyleSheet,
   TextInput,
   Pressable,
-  FlatList,
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { ChevronLeft } from 'lucide-react-native';
 import { colors, spacing, borderRadius } from '../theme';
 import { discoverService } from '../services';
 import { TrendingTopic } from '../types';
@@ -38,8 +39,8 @@ export default function SearchScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()}>
-          <Text style={styles.backText}>← Back</Text>
+        <Pressable onPress={() => router.back()} style={{ padding: spacing.xs }}>
+          <ChevronLeft color={colors.textPrimary} size={24} />
         </Pressable>
       </View>
 
@@ -74,9 +75,10 @@ export default function SearchScreen() {
           )}
         </View>
       ) : (
-        <FlatList
+        <FlashList
           data={filteredTopics}
           keyExtractor={(item) => item.id}
+          estimatedItemSize={80}
           contentContainerStyle={styles.results}
           renderItem={({ item }) => (
             <Pressable style={styles.resultItem}>

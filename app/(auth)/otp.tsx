@@ -5,9 +5,12 @@ import {
   StyleSheet,
   TextInput,
   Pressable,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { ChevronLeft } from 'lucide-react-native';
 import { colors, spacing, borderRadius } from '../../theme';
 import { useAuthStore } from '../../store';
 import { authService } from '../../services';
@@ -58,17 +61,23 @@ export default function OTPScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backText}>← Back</Text>
-        </Pressable>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Pressable onPress={() => router.back()} style={{ padding: spacing.xs }}>
+              <ChevronLeft color={colors.textPrimary} size={24} />
+            </Pressable>
+          </View>
 
-        <Text style={styles.title}>Verify Your Email</Text>
-        <Text style={styles.subtitle}>
-          We've sent a 4-digit verification code to your email address
-        </Text>
+          <Text style={styles.title}>Verify Your Email</Text>
+          <Text style={styles.subtitle}>
+            We've sent a 4-digit verification code to your email address
+          </Text>
 
-        <View style={styles.otpContainer}>
+          <View style={styles.otpContainer}>
           {otp.map((digit, index) => (
             <TextInput
               key={index}
@@ -104,6 +113,7 @@ export default function OTPScreen() {
           <Text style={styles.verifyButtonText}>Verify</Text>
         </Pressable>
       </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

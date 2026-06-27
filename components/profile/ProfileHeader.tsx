@@ -12,6 +12,7 @@ import { typography } from '../../theme/typography';
 import { borderRadius } from '../../theme/borderRadius';
 import type { UserProfile } from '../../types';
 import { Avatar } from '../ui/Avatar';
+import { VerifiedBadge } from '../ui/Icons';
 
 interface ProfileHeaderProps {
   profile: UserProfile;
@@ -57,14 +58,16 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           <Avatar
             uri={profile.avatar}
             size="lg"
-            isVerified={profile.isVerified}
           />
         </View>
       </View>
 
       {/* Name + Username */}
       <View style={styles.nameSection}>
-        <Text style={styles.fullName}>{profile.fullName}</Text>
+        <View style={styles.nameRow}>
+          <Text style={styles.fullName}>{profile.fullName}</Text>
+          {profile.isVerified && <VerifiedBadge />}
+        </View>
         <Text style={styles.username}>@{profile.username}</Text>
       </View>
 
@@ -147,6 +150,12 @@ const styles = StyleSheet.create({
   nameSection: {
     alignItems: 'center',
     marginTop: spacing.md,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
   },
   fullName: {
     fontSize: typography.h3.fontSize,

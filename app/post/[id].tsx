@@ -3,15 +3,16 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   Pressable,
   Image,
   TextInput,
-  KeyboardAvoidingView,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { ChevronLeft } from 'lucide-react-native';
 import { colors, spacing, borderRadius } from '../../theme';
 import { useAuthStore } from '../../store';
 import { useGuestGate } from '../../hooks';
@@ -66,8 +67,8 @@ export default function PostDetailScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()}>
-            <Text style={styles.backText}>← Back</Text>
+          <Pressable onPress={() => router.back()} style={{ padding: spacing.xs }}>
+            <ChevronLeft color={colors.textPrimary} size={24} />
           </Pressable>
           <Text style={styles.headerTitle}>Post</Text>
           <View style={{ width: 60 }} />
@@ -107,16 +108,17 @@ export default function PostDetailScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()}>
-            <Text style={styles.backText}>← Back</Text>
+          <Pressable onPress={() => router.back()} style={{ padding: spacing.xs }}>
+            <ChevronLeft color={colors.textPrimary} size={24} />
           </Pressable>
           <Text style={styles.headerTitle}>Post</Text>
           <View style={{ width: 60 }} />
         </View>
 
-        <FlatList
+        <FlashList
           data={comments}
           keyExtractor={(item) => item.id}
+          estimatedItemSize={100}
           ListHeaderComponent={() => (
             <View>
               {/* Post Content */}

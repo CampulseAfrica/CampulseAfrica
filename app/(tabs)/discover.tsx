@@ -369,7 +369,6 @@ function EventsTab() {
               <Text style={styles.eventDate}>{event.date} · {event.time}</Text>
               <Text style={styles.eventLocation} numberOfLines={1}>{event.location}</Text>
             </View>
-            <Text style={styles.eventBookmark}>🔖</Text>
           </View>
         ))
       )}

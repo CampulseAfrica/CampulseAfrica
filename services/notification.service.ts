@@ -5,7 +5,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const notificationService = {
   async getNotifications(): Promise<Notification[]> {
-    await delay(500);
+    await delay(150);
     return mockNotifications;
   },
 

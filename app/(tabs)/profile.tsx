@@ -3,26 +3,27 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   Pressable,
   Image,
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { colors, spacing, borderRadius } from '../../theme';
+import { colors, spacing, borderRadius, typography } from '../../theme';
 import { useAuthStore } from '../../store';
 import { profileService } from '../../services';
-
 import { Post, VoteType } from '../../types';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { CampulseLogo } from '../../components/ui/Logo';
+import { SearchIcon, ReputationIcon, CalendarIcon, VerifiedBadge, SettingsGearIcon, EditIcon, UniversityIcon } from '../../components/ui/Icons';
+import { PostCard } from '../../components/post/PostCard';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { currentUser, isAuthenticated, isGuest } = useAuthStore();
-
+  const { currentUser, isAuthenticated } = useAuthStore();
   const user = currentUser;
+  
   const [loading, setLoading] = useState(true);
   const [userPosts, setUserPosts] = useState<Post[]>([]);
 
@@ -38,6 +39,28 @@ export default function ProfileScreen() {
     }
     return () => { isMounted = false; };
   }, [user?.id]);
+
+  const handleVote = (postId: string, voteType: VoteType) => {
+    setUserPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId
+          ? {
+              ...p,
+              userVote: p.userVote === voteType ? null : voteType,
+              trueCount: voteType === 'true'
+                ? p.userVote === 'true' ? p.trueCount - 1 : p.trueCount + 1
+                : p.trueCount,
+              misleadingCount: voteType === 'misleading'
+                ? p.userVote === 'misleading' ? p.misleadingCount - 1 : p.misleadingCount + 1
+                : p.misleadingCount,
+              falseCount: voteType === 'false'
+                ? p.userVote === 'false' ? p.falseCount - 1 : p.falseCount + 1
+                : p.falseCount,
+            }
+          : p
+      )
+    );
+  };
 
   if (!isAuthenticated) {
     return (
@@ -75,7 +98,15 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      {/* Header */}
+      <View style={styles.header}>
+        <CampulseLogo width={131} height={26} />
+        <Pressable onPress={() => router.push('/search')}>
+          <SearchIcon />
+        </Pressable>
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Cover Photo */}
         <View style={styles.coverContainer}>
           <Image
@@ -84,91 +115,97 @@ export default function ProfileScreen() {
           />
         </View>
 
-        {/* Avatar */}
-        <View style={styles.avatarContainer}>
-          <Image source={{ uri: user.avatar }} style={styles.profileAvatar} />
-          {user.isVerified && (
-            <View style={styles.verifiedBadgeLarge}>
-              <Text style={styles.verifiedText}>✓</Text>
-            </View>
-          )}
+        {/* Profile Controls & Avatar Overlap */}
+        <View style={styles.controlsRow}>
+          <View style={styles.avatarWrapper}>
+            <Image source={{ uri: user.avatar }} style={styles.profileAvatar} />
+          </View>
+          <View style={styles.actionButtons}>
+            <Pressable style={styles.editButton}>
+              <EditIcon color={colors.textPrimary} width={12} height={12} />
+              <Text style={styles.editButtonText}>Edit</Text>
+            </Pressable>
+            <Pressable style={styles.settingsButton} onPress={() => router.push('/settings')}>
+              <SettingsGearIcon color="#757575" width={20} height={20} />
+            </Pressable>
+          </View>
         </View>
 
         {/* User Info */}
         <View style={styles.userInfo}>
           <Text style={styles.fullName}>{user.fullName}</Text>
           <Text style={styles.username}>@{user.username}</Text>
-          <Text style={styles.faculty}>{user.faculty} · {user.university.name}</Text>
-          {user.bio && <Text style={styles.bio}>{user.bio}</Text>}
+          
+          <Text style={styles.faculty}>{user.faculty}</Text>
+          <View style={styles.universityRow}>
+            <UniversityIcon width={14} height={14} />
+            <Text style={styles.universityName}>{user.university.name}</Text>
+          </View>
         </View>
 
         {/* Stats */}
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{user.postsCount}</Text>
-            <Text style={styles.statLabel}>Posts</Text>
+            <Text style={styles.statLabel}>Post</Text>
           </View>
-          <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>{user.followersCount.toLocaleString()}</Text>
+            <Text style={styles.statValue}>{user.followersCount >= 1000 ? (user.followersCount/1000).toFixed(1) + 'K' : user.followersCount}</Text>
             <Text style={styles.statLabel}>Followers</Text>
           </View>
-          <View style={styles.statDivider} />
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{user.followingCount}</Text>
             <Text style={styles.statLabel}>Following</Text>
           </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{user.reputation}</Text>
-            <Text style={styles.statLabel}>Rep</Text>
-          </View>
         </View>
 
-        {/* Edit Profile */}
-        <View style={styles.editContainer}>
-          <Pressable style={styles.editButton}>
-            <Text style={styles.editButtonText}>Edit Profile</Text>
-          </Pressable>
-        </View>
+        {/* Badges */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.badgesContainer}>
+          <View style={styles.badgeCard}>
+            <View style={[styles.badgeIconWrapper, { backgroundColor: '#F0EEFF' }]}>
+              <ReputationIcon width={20} height={20} />
+            </View>
+            <View>
+              <Text style={styles.badgeTitle}>Reputation</Text>
+              <Text style={styles.badgeValue}>Level 3</Text>
+            </View>
+          </View>
+          
+          <View style={styles.badgeCard}>
+            <View style={[styles.badgeIconWrapper, { backgroundColor: '#F0EEFF' }]}>
+              <CalendarIcon width={20} height={20} />
+            </View>
+            <View>
+              <Text style={styles.badgeTitle}>Joined</Text>
+              <Text style={styles.badgeValue}>Sep 2025</Text>
+            </View>
+          </View>
+          
+        </ScrollView>
 
         {/* User's Posts */}
         <View style={styles.postsSection}>
-          <Text style={styles.postsSectionTitle}>Posts</Text>
+          <Text style={styles.postsSectionTitle}>My Posts</Text>
           {loading ? (
-            Array.from({ length: 3 }).map((_, i) => (
-              <View key={i} style={styles.miniPostCard}>
-                <Skeleton width="100%" height={14} style={{ marginBottom: 4 }} />
-                <Skeleton width="80%" height={14} style={{ marginBottom: spacing.md }} />
-                <View style={styles.miniPostStats}>
-                  <Skeleton width={40} height={14} />
-                  <Skeleton width={40} height={14} />
-                  <Skeleton width={40} height={14} />
-                </View>
-              </View>
-            ))
+            <View style={{ padding: spacing.md }}>
+               <Skeleton width="100%" height={100} style={{ marginBottom: spacing.md }} />
+               <Skeleton width="100%" height={100} />
+            </View>
           ) : userPosts.length > 0 ? (
             userPosts.map((post) => (
-              <Pressable
-                key={post.id}
-                style={styles.miniPostCard}
-                onPress={() => router.push(`/post/${post.id}`)}
-              >
-                <Text style={styles.miniPostContent} numberOfLines={3}>
-                  {post.content}
-                </Text>
-                <View style={styles.miniPostStats}>
-                  <Text style={styles.miniPostStat}>✓ {post.trueCount}</Text>
-                  <Text style={styles.miniPostStat}>💬 {post.commentsCount}</Text>
-                  <Text style={styles.miniPostStat}>↗ {post.sharesCount}</Text>
-                </View>
-              </Pressable>
+              <View key={post.id} style={{ marginBottom: spacing.md, paddingHorizontal: spacing.md }}>
+                <PostCard
+                  post={post}
+                  onVote={handleVote}
+                  onPress={() => router.push(`/post/${post.id}`)}
+                />
+              </View>
             ))
           ) : (
             <EmptyState
               icon="📭"
               title="No posts yet"
-              subtitle="This user hasn't posted anything"
+              subtitle="You haven't posted anything"
             />
           )}
         </View>
@@ -180,9 +217,169 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#FAFAFA',
   },
-  // Guest state
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    backgroundColor: '#FAFAFA',
+  },
+  scrollContent: {
+    paddingBottom: 100,
+  },
+  coverContainer: {
+    height: 140,
+    marginHorizontal: spacing.md,
+    borderRadius: borderRadius.xl,
+    overflow: 'hidden',
+  },
+  coverPhoto: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  controlsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    marginTop: -40,
+    alignItems: 'flex-end',
+  },
+  avatarWrapper: {
+    borderRadius: 50,
+    padding: 3,
+    backgroundColor: '#FAFAFA',
+  },
+  profileAvatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: colors.surface,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  editButton: {
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xs + 2,
+    borderRadius: borderRadius.full,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  editButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  settingsButton: {
+    backgroundColor: '#F5F5F5',
+    width: 36,
+    height: 36,
+    borderRadius: borderRadius.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  userInfo: {
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.md,
+  },
+  fullName: {
+    fontSize: typography.h3.fontSize,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+  },
+  username: {
+    fontSize: 14,
+    color: colors.primary,
+    marginTop: 2,
+  },
+  faculty: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginTop: spacing.sm,
+  },
+  universityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+  },
+  universityName: {
+    fontSize: 14,
+    color: '#A0A0A0',
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    gap: spacing.xl,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 4,
+  },
+  statValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: '#A0A0A0',
+  },
+  badgesContainer: {
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.xl,
+    gap: spacing.sm,
+  },
+  badgeCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: borderRadius.lg,
+    padding: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    minWidth: 140,
+  },
+  badgeIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: borderRadius.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgeTitle: {
+    fontSize: 11,
+    color: '#A0A0A0',
+    textTransform: 'uppercase',
+  },
+  badgeValue: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginTop: 2,
+  },
+  postsSection: {
+    marginTop: spacing.xl,
+  },
+  postsSectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  // Guest view styles
   guestContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -195,7 +392,7 @@ const styles = StyleSheet.create({
   },
   guestTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: 'bold',
     color: colors.textPrimary,
     textAlign: 'center',
     marginBottom: spacing.sm,
@@ -215,7 +412,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   signUpButtonText: {
-    color: colors.textInverse,
+    color: colors.surface,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -223,161 +420,5 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: 14,
     fontWeight: '500',
-  },
-  // Cover
-  coverContainer: {
-    height: 160,
-  },
-  coverPhoto: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  // Avatar
-  avatarContainer: {
-    alignItems: 'center',
-    marginTop: -50,
-    marginBottom: spacing.md,
-  },
-  profileAvatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 4,
-    borderColor: colors.surface,
-  },
-  verifiedBadgeLarge: {
-    position: 'absolute',
-    bottom: 2,
-    right: '35%',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: colors.surface,
-  },
-  verifiedText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  // User Info
-  userInfo: {
-    alignItems: 'center',
-    paddingHorizontal: spacing['2xl'],
-    marginBottom: spacing.xl,
-  },
-  fullName: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  username: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  faculty: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-  },
-  bio: {
-    fontSize: 14,
-    color: colors.textPrimary,
-    textAlign: 'center',
-    marginTop: spacing.sm,
-    lineHeight: 20,
-  },
-  // Stats
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: spacing['2xl'],
-    marginBottom: spacing.xl,
-    gap: spacing.lg,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  statDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: colors.border,
-  },
-  // Edit Profile
-  editContainer: {
-    paddingHorizontal: spacing['2xl'],
-    marginBottom: spacing['2xl'],
-  },
-  editButton: {
-    borderWidth: 1,
-    borderColor: colors.primary,
-    borderRadius: borderRadius['3xl'],
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-  },
-  editButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.primary,
-  },
-  // Posts
-  postsSection: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing['4xl'],
-  },
-  postsSectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    marginBottom: spacing.lg,
-  },
-  miniPostCard: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 1,
-  },
-  miniPostContent: {
-    fontSize: 14,
-    color: colors.textPrimary,
-    lineHeight: 20,
-    marginBottom: spacing.md,
-  },
-  miniPostStats: {
-    flexDirection: 'row',
-    gap: spacing.lg,
-  },
-  miniPostStat: {
-    fontSize: 13,
-    color: colors.textSecondary,
-  },
-  emptyPosts: {
-    alignItems: 'center',
-    paddingVertical: spacing['4xl'],
-  },
-  emptyPostsText: {
-    fontSize: 14,
-    color: colors.textSecondary,
   },
 });

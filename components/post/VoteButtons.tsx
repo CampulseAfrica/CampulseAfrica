@@ -5,6 +5,7 @@ import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 import { borderRadius } from '../../theme/borderRadius';
 import type { VoteType } from '../../types';
+import { TrueIcon, MisleadingIcon, FalseIcon } from '../ui/Icons';
 
 interface VoteButtonsProps {
   userVote: VoteType | null;
@@ -14,14 +15,14 @@ interface VoteButtonsProps {
 interface VoteOption {
   type: VoteType;
   label: string;
-  icon: string;
+  IconComponent: React.FC<{ width?: number; height?: number; color?: string }>;
   activeColor: string;
 }
 
 const voteOptions: VoteOption[] = [
-  { type: 'true', label: 'True', icon: '✓', activeColor: colors.voteTrue },
-  { type: 'misleading', label: 'Misleading', icon: 'ⓘ', activeColor: colors.voteMisleading },
-  { type: 'false', label: 'False', icon: '✕', activeColor: colors.voteFalse },
+  { type: 'true', label: 'True', IconComponent: TrueIcon, activeColor: colors.voteTrue },
+  { type: 'misleading', label: 'Misleading', IconComponent: MisleadingIcon, activeColor: colors.voteMisleading },
+  { type: 'false', label: 'False', IconComponent: FalseIcon, activeColor: colors.voteFalse },
 ];
 
 export const VoteButtons: React.FC<VoteButtonsProps> = ({
@@ -48,22 +49,15 @@ export const VoteButtons: React.FC<VoteButtonsProps> = ({
               pressed && styles.pressed,
             ]}
           >
-            <Text
-              style={[
-                styles.icon,
-                {
-                  color: isActive ? colors.textInverse : option.activeColor,
-                },
-              ]}
-            >
-              {option.icon}
-            </Text>
+            <option.IconComponent
+              width={16}
+              height={16}
+              color={isActive ? colors.surface : colors.textSecondary}
+            />
             <Text
               style={[
                 styles.label,
-                {
-                  color: isActive ? colors.textInverse : colors.textPrimary,
-                },
+                { color: isActive ? colors.surface : colors.textPrimary }
               ]}
             >
               {option.label}

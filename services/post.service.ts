@@ -7,10 +7,10 @@ export const postService = {
   async getPosts(tab: 'mySchool' | 'otherCampus', universityName?: string): Promise<Post[]> {
     await delay(600);
     if (tab === 'mySchool' && universityName) {
-      return mockPosts.filter((p) => p.university === universityName);
+      return mockPosts.filter((p) => p.user.university.name === universityName);
     }
     if (tab === 'otherCampus' && universityName) {
-      return mockPosts.filter((p) => p.university !== universityName);
+      return mockPosts.filter((p) => p.user.university.name !== universityName);
     }
     return mockPosts;
   },
@@ -34,7 +34,7 @@ export const postService = {
   },
 
   async getComments(postId: string): Promise<Comment[]> {
-    await delay(500);
+    await delay(150);
     // Generate mock comments
     return Array.from({ length: 8 }, (_, i) => ({
       id: `comment-${postId}-${i}`,
@@ -74,6 +74,11 @@ export const postService = {
 
   async sharePost(postId: string): Promise<boolean> {
     await delay(200);
+    return true;
+  },
+
+  async createPost(data: { content: string; authorId: string; universityId: string }): Promise<any> {
+    await delay(500);
     return true;
   },
 };

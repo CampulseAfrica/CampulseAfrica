@@ -3,9 +3,9 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   Pressable,
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, borderRadius } from '../../theme';
 import { Notification } from '../../types';
@@ -61,13 +61,14 @@ export default function NotificationScreen() {
           ))}
         </View>
       ) : (
-        <FlatList
+        <FlashList
           data={notifications}
           keyExtractor={(item) => item.id}
+          estimatedItemSize={80}
           renderItem={({ item }) => <NotificationItem item={item} />}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          ItemSeparatorComponent={() => <View style={{ height: spacing.xs }} />}
           ListEmptyComponent={
             <EmptyState
               icon="🔔"

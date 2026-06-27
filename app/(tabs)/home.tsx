@@ -3,12 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   Pressable,
   Image,
   RefreshControl,
   Modal,
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { colors, spacing, borderRadius } from '../../theme';
@@ -17,114 +17,11 @@ import { useGuestGate } from '../../hooks';
 import { postService } from '../../services';
 import { Post, VoteType, FeedTab } from '../../types';
 import { CampulseLogo } from '../../components/ui/Logo';
-import { SearchIcon, TrueIcon, MisleadingIcon, FalseIcon, CommentsIcon, ShareIcon } from '../../components/ui/Icons';
+import { SearchIcon, TrueIcon, MisleadingIcon, FalseIcon, CommentsIcon, ShareIcon, VerifiedBadge } from '../../components/ui/Icons';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { PostCard } from '../../components/post/PostCard';
 
-function PostCard({
-  post,
-  onVote,
-  onPress,
-  isGuest,
-  gateAction,
-}: {
-  post: Post;
-  onVote: (postId: string, voteType: VoteType) => void;
-  onPress: () => void;
-  isGuest: boolean;
-  gateAction: (action: () => void) => void;
-}) {
-  const timeAgo = '2h ago';
-
-  return (
-    <Pressable style={styles.postCard} onPress={onPress}>
-      {/* Header */}
-      <View style={styles.postHeader}>
-        <Image source={{ uri: post.user.avatar }} style={styles.avatar} />
-        <View style={styles.postUserInfo}>
-          <View style={styles.nameRow}>
-            <Text style={styles.userName}>{post.user.fullName}</Text>
-            {post.user.isVerified && (
-              <Text style={styles.verifiedBadge}>✓</Text>
-            )}
-          </View>
-          <Text style={styles.universityText}>
-            {post.user.university.name}. {timeAgo}
-          </Text>
-        </View>
-        <Pressable
-          style={styles.followButton}
-          onPress={() => gateAction(() => {})}
-        >
-          <Text style={styles.followButtonText}>Follow</Text>
-        </Pressable>
-      </View>
-
-      {/* Content */}
-      <Text style={styles.postContent}>{post.content}</Text>
-
-      {/* Image */}
-      {post.images.length > 0 && (
-        <Image source={{ uri: post.images[0] }} style={styles.postImage} />
-      )}
-
-      {/* Vote Buttons */}
-      <View style={styles.voteContainer}>
-        {(['true', 'misleading', 'false'] as VoteType[]).map((voteType) => {
-          const isActive = post.userVote === voteType;
-          const IconComponent = voteType === 'true' ? TrueIcon : voteType === 'misleading' ? MisleadingIcon : FalseIcon;
-          const iconColor = isActive ? colors.primary : '#757575';
-          const label = voteType === 'true' ? 'True' : voteType === 'misleading' ? 'Misleading' : 'False';
-
-          return (
-            <Pressable
-              key={voteType}
-              style={[
-                styles.voteButton,
-                isActive && styles.voteButtonActive,
-              ]}
-              onPress={() => gateAction(() => onVote(post.id, voteType))}
-            >
-              <IconComponent color={iconColor} />
-              <Text
-                style={[
-                  styles.voteLabel,
-                  isActive && styles.voteLabelActive,
-                ]}
-              >
-                {label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      {/* Stats */}
-      <View style={styles.statsRow}>
-        <View style={styles.stat}>
-          <TrueIcon color="#757575" />
-          <Text style={styles.statText}>{post.trueCount}</Text>
-        </View>
-        <View style={styles.stat}>
-          <MisleadingIcon color="#757575" />
-          <Text style={styles.statText}>{post.misleadingCount}</Text>
-        </View>
-        <View style={styles.stat}>
-          <FalseIcon color="#757575" />
-          <Text style={styles.statText}>{post.falseCount}</Text>
-        </View>
-        <View style={styles.stat}>
-          <CommentsIcon color="#757575" />
-          <Text style={styles.statText}>{post.commentsCount}</Text>
-        </View>
-        <Pressable style={styles.stat}>
-          <ShareIcon color="#757575" />
-          <Text style={styles.statText}>Share</Text>
-        </Pressable>
-      </View>
-    </Pressable>
-  );
-}
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -237,16 +134,19 @@ export default function HomeScreen() {
           ))}
         </View>
       ) : (
-        <FlatList
+        <FlashList
           data={posts}
           keyExtractor={(item) => item.id}
+          estimatedItemSize={250}
           renderItem={({ item }) => (
             <PostCard
               post={item}
-              onVote={handleVote}
-              onPress={() => router.push(`/post/${item.id}`)}
+              onVote={(postId, voteType) => gateAction(() => handleVote(postId, voteType))}
+              onPress={(postId) => router.push(`/post/${postId}`)}
+              onFollow={() => gateAction(() => {})}
+              onComment={() => gateAction(() => {})}
+              onShare={() => gateAction(() => {})}
               isGuest={!isAuthenticated}
-              gateAction={gateAction}
             />
           )}
           contentContainerStyle={styles.feedContent}

@@ -5,7 +5,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const profileService = {
   async getProfile(userId: string): Promise<UserProfile> {
-    await delay(500);
+    await delay(150);
     const user = Object.values(mockUsers).find((u) => u.id === userId) ?? Object.values(mockUsers)[0];
     return {
       ...user,
@@ -15,7 +15,7 @@ export const profileService = {
   },
 
   async getUserPosts(userId: string): Promise<Post[]> {
-    await delay(500);
+    await delay(150);
     return mockPosts.filter((p) => p.user.id === userId);
   },
 
@@ -41,7 +41,7 @@ export const profileService = {
   },
 
   async getFollowers(userId: string): Promise<UserProfile[]> {
-    await delay(500);
+    await delay(150);
     return Object.values(mockUsers).slice(0, 10).map((u) => ({
       ...u,
       isFollowing: Math.random() > 0.5,
@@ -50,7 +50,7 @@ export const profileService = {
   },
 
   async getFollowing(userId: string): Promise<UserProfile[]> {
-    await delay(500);
+    await delay(150);
     return Object.values(mockUsers).slice(5, 15).map((u) => ({
       ...u,
       isFollowing: true,

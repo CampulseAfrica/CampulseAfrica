@@ -18,7 +18,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const authService = {
   async signUp(data: SignUpData): Promise<User> {
-    await delay(800);
+    await delay(250);
     // Simulate creating a new user
     const newUser: User = {
       ...Object.values(mockUsers)[0],
@@ -35,7 +35,7 @@ export const authService = {
   },
 
   async login(data: LoginData): Promise<User> {
-    await delay(800);
+    await delay(250);
     // Simulate login — return the first mock user
     const user = Object.values(mockUsers).find((u) => u.email === data.email);
     if (!user) {
@@ -65,7 +65,7 @@ export const authService = {
   },
 
   async getUniversities(): Promise<University[]> {
-    await delay(500);
+    await delay(150);
     return Object.values(mockUniversities);
   },
 };

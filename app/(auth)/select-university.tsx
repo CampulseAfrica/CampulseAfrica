@@ -3,10 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   Pressable,
   TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Search } from 'lucide-react-native';
@@ -60,79 +62,85 @@ export default function SelectUniversityScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Select Your University</Text>
-        <Text style={styles.subtitle}>
-          Browse campus feeds as a guest, or sign up to participate
-        </Text>
-      </View>
-
-      <View style={styles.searchContainer}>
-        <View style={styles.searchInputWrapper}>
-          <Search
-            size={20}
-            color={colors.textTertiary}
-            style={styles.searchIcon}
-          />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search universities..."
-            placeholderTextColor={colors.textTertiary}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <View style={styles.header}>
+          <Text style={styles.title}>Select Your University</Text>
+          <Text style={styles.subtitle}>
+            Browse campus feeds as a guest, or sign up to participate
+          </Text>
         </View>
-      </View>
 
-      {loading ? (
-        <View style={styles.listContent}>
-          {Array.from({ length: 5 }).map((_, i) => (
-            <View key={i} style={[styles.universityItem, { padding: spacing.md }]}>
-              <Skeleton width={48} height={48} borderRadius={24} />
-              <View style={styles.universityInfo}>
-                <Skeleton width="60%" height={16} style={{ marginBottom: 4 }} />
-                <Skeleton width="40%" height={14} />
-              </View>
-            </View>
-          ))}
+        <View style={styles.searchContainer}>
+          <View style={styles.searchInputWrapper}>
+            <Search
+              size={20}
+              color={colors.textTertiary}
+              style={styles.searchIcon}
+            />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search universities..."
+              placeholderTextColor={colors.textTertiary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
         </View>
-      ) : (
-        <FlatList
-          data={filteredUniversities}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => {
-            const isSelected = item.id === selectedId;
-            return (
-              <Pressable
-                style={({ pressed }) => [
-                  styles.universityItem,
-                  isSelected && styles.universityItemSelected,
-                  pressed && !isSelected && styles.universityItemPressed,
-                ]}
-                onPress={() => handleToggleSelect(item)}
-              >
+
+        {loading ? (
+          <View style={styles.listContent}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <View key={i} style={[styles.universityItem, { padding: spacing.md }]}>
+                <Skeleton width={48} height={48} borderRadius={24} />
                 <View style={styles.universityInfo}>
-                  <Text style={styles.universityName} numberOfLines={1}>{item.name}</Text>
-                  <Text style={styles.universityLocation} numberOfLines={1}>{item.location}</Text>
+                  <Skeleton width="60%" height={16} style={{ marginBottom: 4 }} />
+                  <Skeleton width="40%" height={14} />
                 </View>
-                <View style={styles.rightContent}>
-                  <View style={styles.shortNameBadge}>
-                    <Text style={styles.shortNameText}>{item.shortName}</Text>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <FlashList
+            data={filteredUniversities}
+            keyExtractor={(item) => item.id}
+            estimatedItemSize={80}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => {
+              const isSelected = item.id === selectedId;
+              return (
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.universityItem,
+                    isSelected && styles.universityItemSelected,
+                    pressed && !isSelected && styles.universityItemPressed,
+                  ]}
+                  onPress={() => handleToggleSelect(item)}
+                >
+                  <View style={styles.universityInfo}>
+                    <Text style={styles.universityName} numberOfLines={1}>{item.name}</Text>
+                    <Text style={styles.universityLocation} numberOfLines={1}>{item.location}</Text>
                   </View>
-                </View>
-              </Pressable>
-            );
-          }}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyTitle}>No universities found</Text>
-            </View>
-          }
-        />
-      )}
+                  <View style={styles.rightContent}>
+                    <View style={styles.shortNameBadge}>
+                      <Text style={styles.shortNameText}>{item.shortName}</Text>
+                    </View>
+                  </View>
+                </Pressable>
+              );
+            }}
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyTitle}>No universities found</Text>
+              </View>
+            }
+          />
+        )}
+      </KeyboardAvoidingView>
 
       {selectedId ? (
         <View style={styles.footer}>

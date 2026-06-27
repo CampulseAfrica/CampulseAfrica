@@ -8,19 +8,17 @@ type AvatarSize = 'sm' | 'md' | 'lg';
 interface AvatarProps {
   uri: string;
   size?: AvatarSize;
-  isVerified?: boolean;
 }
 
-const sizeMap: Record<AvatarSize, { container: number; badge: number; badgeIcon: number; badgeOffset: number }> = {
-  sm: { container: 32, badge: 14, badgeIcon: 8, badgeOffset: -1 },
-  md: { container: 44, badge: 18, badgeIcon: 10, badgeOffset: -1 },
-  lg: { container: 64, badge: 22, badgeIcon: 12, badgeOffset: -2 },
+const sizeMap: Record<AvatarSize, { container: number }> = {
+  sm: { container: 32 },
+  md: { container: 44 },
+  lg: { container: 64 },
 };
 
 export const Avatar: React.FC<AvatarProps> = ({
   uri,
   size = 'md',
-  isVerified = false,
 }) => {
   const dim = sizeMap[size];
 
@@ -42,29 +40,6 @@ export const Avatar: React.FC<AvatarProps> = ({
           },
         ]}
       />
-      {isVerified && (
-        <View
-          style={[
-            styles.badge,
-            {
-              width: dim.badge,
-              height: dim.badge,
-              borderRadius: borderRadius.full,
-              bottom: dim.badgeOffset,
-              right: dim.badgeOffset,
-            },
-          ]}
-        >
-          <Text
-            style={[
-              styles.badgeIcon,
-              { fontSize: dim.badgeIcon },
-            ]}
-          >
-            ✓
-          </Text>
-        </View>
-      )}
     </View>
   );
 };
@@ -74,18 +49,6 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   image: {
-    backgroundColor: colors.border,
-  },
-  badge: {
-    position: 'absolute',
-    backgroundColor: colors.verified,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: colors.surface,
-  },
-  badgeIcon: {
-    color: colors.textInverse,
-    fontWeight: '700',
+    backgroundColor: colors.surface,
   },
 });

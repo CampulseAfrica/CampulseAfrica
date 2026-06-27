@@ -13,14 +13,33 @@ import { borderRadius } from '../../theme/borderRadius';
 import type { Post, VoteType } from '../../types';
 import { Avatar } from '../ui/Avatar';
 import { VoteButtons } from './VoteButtons';
-import { PostStats } from './PostStats';
+import { VerifiedBadge, TrueIcon, MisleadingIcon, FalseIcon, CommentsIcon, ShareIcon } from '../ui/Icons';
+import { useAuthStore } from '../../store';
+
+const formatTimeAgo = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  
+  if (seconds < 60) return `Just now`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months}mo ago`;
+  const years = Math.floor(months / 12);
+  return `${years}y ago`;
+};
 
 interface PostCardProps {
   post: Post;
   onVote: (postId: string, voteType: VoteType) => void;
-  onComment: (postId: string) => void;
-  onShare: (postId: string) => void;
-  onFollow: (userId: string) => void;
+  onComment?: (postId: string) => void;
+  onShare?: (postId: string) => void;
+  onFollow?: (userId: string) => void;
   onPress: (postId: string) => void;
   isGuest?: boolean;
 }
@@ -74,7 +93,9 @@ export const PostCard: React.FC<PostCardProps> = ({
   onPress,
   isGuest = false,
 }) => {
-  const timeAgo = post.createdAt;
+  const { currentUser } = useAuthStore();
+  const timeAgo = formatTimeAgo(post.createdAt);
+  const isOwnPost = currentUser?.id === post.user.id;
 
   return (
     <Pressable
@@ -89,25 +110,29 @@ export const PostCard: React.FC<PostCardProps> = ({
         <Avatar
           uri={post.user.avatar}
           size="md"
-          isVerified={post.user.isVerified}
         />
         <View style={styles.headerInfo}>
-          <Text style={styles.userName} numberOfLines={1}>
-            {post.user.fullName}
-          </Text>
+          <View style={styles.nameRow}>
+            <Text style={styles.userName} numberOfLines={1}>
+              {post.user.fullName}
+            </Text>
+            {post.user.isVerified && <VerifiedBadge />}
+          </View>
           <Text style={styles.meta} numberOfLines={1}>
-            {post.user.university.shortName} · {timeAgo}
+            {post.user.university.name}. {timeAgo}
           </Text>
         </View>
-        <Pressable
-          onPress={() => onFollow(post.user.id)}
-          style={({ pressed }) => [
-            styles.followButton,
-            pressed && styles.pressed,
-          ]}
-        >
-          <Text style={styles.followText}>Follow</Text>
-        </Pressable>
+        {!isOwnPost && (
+          <Pressable
+            onPress={() => onFollow?.(post.user.id)}
+            style={({ pressed }) => [
+              styles.followButton,
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={styles.followText}>Follow</Text>
+          </Pressable>
+        )}
       </View>
 
       {/* Content */}
@@ -125,31 +150,37 @@ export const PostCard: React.FC<PostCardProps> = ({
       )}
 
       {/* Vote Buttons */}
-      <View style={styles.voteSection}>
-        <VoteButtons
-          userVote={post.userVote}
-          onVote={(voteType) => onVote(post.id, voteType)}
-        />
-      </View>
+      {!isOwnPost && (
+        <View style={styles.voteSection}>
+          <VoteButtons
+            userVote={post.userVote}
+            onVote={(voteType) => onVote(post.id, voteType)}
+          />
+        </View>
+      )}
 
       {/* Stats Row */}
       <View style={styles.statsRow}>
-        <PostStats
-          trueCount={post.trueCount}
-          misleadingCount={post.misleadingCount}
-          falseCount={post.falseCount}
-          commentsCount={post.commentsCount}
-          sharesCount={post.sharesCount}
-        />
-
-        <View style={styles.actions}>
-          <Pressable onPress={() => onComment(post.id)} style={styles.actionBtn}>
-            <Text style={styles.actionIcon}>💬</Text>
-          </Pressable>
-          <Pressable onPress={() => onShare(post.id)} style={styles.actionBtn}>
-            <Text style={styles.actionIcon}>↗</Text>
-          </Pressable>
+        <View style={styles.stat}>
+          <TrueIcon color="#757575" width={16} height={16} />
+          <Text style={styles.statText}>{post.trueCount}</Text>
         </View>
+        <View style={styles.stat}>
+          <MisleadingIcon color="#757575" width={16} height={16} />
+          <Text style={styles.statText}>{post.misleadingCount}</Text>
+        </View>
+        <View style={styles.stat}>
+          <FalseIcon color="#757575" width={16} height={16} />
+          <Text style={styles.statText}>{post.falseCount}</Text>
+        </View>
+        <Pressable style={styles.stat} onPress={() => onComment?.(post.id)}>
+          <CommentsIcon color="#757575" width={16} height={16} />
+          <Text style={styles.statText}>{post.commentsCount}</Text>
+        </Pressable>
+        <Pressable style={styles.stat} onPress={() => onShare?.(post.id)}>
+          <ShareIcon color="#757575" width={16} height={16} />
+          <Text style={styles.statText}>Share</Text>
+        </Pressable>
       </View>
     </Pressable>
   );
@@ -158,15 +189,9 @@ export const PostCard: React.FC<PostCardProps> = ({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
     padding: spacing.lg,
-    marginHorizontal: spacing.lg,
-    marginBottom: spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   cardPressed: {
     opacity: 0.97,
@@ -179,6 +204,13 @@ const styles = StyleSheet.create({
   headerInfo: {
     flex: 1,
     marginLeft: spacing.md,
+    marginRight: spacing.sm,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 2,
   },
   userName: {
     fontSize: typography.bodySemibold.fontSize,
@@ -237,16 +269,14 @@ const styles = StyleSheet.create({
     borderTopColor: colors.divider,
     paddingTop: spacing.md,
   },
-  actions: {
+  stat: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
+    gap: 4,
   },
-  actionBtn: {
-    padding: spacing.xs,
-  },
-  actionIcon: {
-    fontSize: 18,
-    color: colors.textSecondary,
+  statText: {
+    fontSize: 12,
+    color: '#757575',
+    fontWeight: '500',
   },
 });

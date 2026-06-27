@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { colors } from '../theme';
 import { useAuthStore } from '../store';
+import { CampulseLogo } from '../components/ui/Logo';
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function SplashScreen() {
     <View style={styles.container}>
       <StatusBar style="dark" />
       <View style={styles.logoContainer}>
-        <Text style={styles.logo}>Campulse</Text>
+        <CampulseLogo width={200} height={40} />
         <Text style={styles.tagline}>Your Campus, Connected</Text>
       </View>
     </View>
@@ -53,15 +54,9 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
   },
-  logo: {
-    fontSize: 40,
-    fontWeight: '800',
-    color: colors.primary,
-    letterSpacing: -1,
-  },
   tagline: {
     fontSize: 14,
     color: colors.textSecondary,
-    marginTop: 8,
+    marginTop: 0,
   },
 });

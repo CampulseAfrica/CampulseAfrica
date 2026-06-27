@@ -17,32 +17,32 @@ export const discoverService = {
   },
 
   async getTrending(): Promise<TrendingTopic[]> {
-    await delay(500);
+    await delay(150);
     return mockTrendingTopics;
   },
 
   async getNews(): Promise<NewsItem[]> {
-    await delay(500);
+    await delay(150);
     return mockNewsItems;
   },
 
   async getJobs(): Promise<Job[]> {
-    await delay(500);
+    await delay(150);
     return mockJobs.filter((j) => j.type === 'job');
   },
 
   async getAbroadOpportunities(): Promise<Job[]> {
-    await delay(500);
+    await delay(150);
     return mockJobs.filter((j) => j.type === 'abroad');
   },
 
   async getAcademicMaterials(): Promise<AcademicMaterial[]> {
-    await delay(500);
+    await delay(150);
     return mockAcademicMaterials;
   },
 
   async getEvents(): Promise<CampusEvent[]> {
-    await delay(500);
+    await delay(150);
     return mockEvents;
   },
 
