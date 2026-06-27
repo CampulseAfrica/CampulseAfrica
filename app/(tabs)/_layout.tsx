@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Tabs } from 'expo-router';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { colors } from '../../theme';
+import { HomeIcon, DiscoverIcon, NotificationIcon, CreateIcon } from '../../components/ui/TabIcons';
+import { User } from 'lucide-react-native';
 
 interface TabIconProps {
-  icon: string;
+  icon: ReactNode;
   label: string;
   focused: boolean;
 }
@@ -12,8 +14,8 @@ interface TabIconProps {
 function TabIcon({ icon, label, focused }: TabIconProps) {
   return (
     <View style={styles.tabIconContainer}>
-      <Text style={[styles.tabIcon, focused && styles.tabIconActive]}>{icon}</Text>
-      <Text style={[styles.tabLabel, focused && styles.tabLabelActive]}>{label}</Text>
+      {icon}
+      <Text numberOfLines={1} style={[styles.tabLabel, focused && styles.tabLabelActive]}>{label}</Text>
     </View>
   );
 }
@@ -27,37 +29,72 @@ export default function TabsLayout() {
         tabBarShowLabel: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.tabBarInactive,
+        tabBarButton: (props) => (
+          <Pressable
+            {...(props as any)}
+            style={({ pressed }) => [
+              props.style,
+              pressed && { opacity: 0.7 }, // Clean iOS-style fade instead of a black shadow
+            ]}
+          />
+        ),
       }}
     >
       <Tabs.Screen
         name="home"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon="🏠" label="Home" focused={focused} />
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon
+              icon={<HomeIcon color={color as string} size={focused ? 26 : 22} />}
+              label="Home"
+              focused={focused}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="discover"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon="🔲" label="Discover" focused={focused} />
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon
+              icon={<DiscoverIcon color={color as string} size={focused ? 26 : 22} />}
+              label="Discover"
+              focused={focused}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="create"
+        options={{
+          tabBarIcon: () => (
+            <View style={styles.createButtonContainer}>
+              <CreateIcon size={72} />
+            </View>
           ),
         }}
       />
       <Tabs.Screen
         name="notification"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon="🔔" label="Notification" focused={focused} />
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon
+              icon={<NotificationIcon color={color as string} size={focused ? 26 : 22} />}
+              label="Notification"
+              focused={focused}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon="👤" label="Profile" focused={focused} />
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon
+              icon={<User color={color as string} size={focused ? 26 : 22} strokeWidth={focused ? 2.5 : 2} />}
+              label="Profile"
+              focused={focused}
+            />
           ),
         }}
       />
@@ -67,36 +104,39 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: colors.tabBarBackground,
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 0,
     elevation: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
-    height: 70,
+    height: 72,
     paddingTop: 8,
     paddingBottom: 8,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    position: 'absolute',
   },
   tabIconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
+    gap: 4,
+    width: 60,
   },
-  tabIcon: {
-    fontSize: 22,
-    opacity: 0.5,
-  },
-  tabIconActive: {
-    opacity: 1,
+  createButtonContainer: {
+    top: -29, // adjusted
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   tabLabel: {
     fontSize: 10,
     fontWeight: '500',
     color: colors.tabBarInactive,
+    textAlign: 'center',
   },
   tabLabelActive: {
-    color: colors.primary,
+    color: '#4B3EDC', // Extracted exactly from the Figma active state
     fontWeight: '600',
   },
 });

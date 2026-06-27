@@ -17,8 +17,8 @@ import { useAuthStore } from '../store';
 
 const { width, height } = Dimensions.get('window');
 const IMAGE_HEIGHT = height * 0.58;
-// How much the curve "bites" into the image from the bottom
-const CURVE_HEIGHT = 60;
+// How much the diagonal clip "bites" into the image from the bottom
+const CLIP_HEIGHT = 120;
 
 interface OnboardingSlide {
   id: string;
@@ -49,32 +49,24 @@ const slides: OnboardingSlide[] = [
 ];
 
 /**
- * SVG overlay that creates the curved clip effect at the bottom of the image.
- * Draws a filled shape matching the background color that covers the bottom
- * portion with a smooth bezier curve — left side clips higher, right side lower.
+ * SVG overlay that creates a straight diagonal clip at the bottom of the image.
+ * Draws a filled triangle matching the background color — the diagonal line
+ * goes from higher on the left to lower on the right, creating a sharp angular cut.
  */
-function CurveOverlay() {
-  // The curve path:
-  // - Starts at bottom-left (0, IMAGE_HEIGHT)
-  // - Goes up to the start of the curve on the left side
-  // - Draws a cubic bezier across to the right
-  // - Goes down to bottom-right
-  // - Closes the shape
+function DiagonalClipOverlay() {
+  // Clean straight diagonal — left side lower, right side higher
   const d = `
-    M 0 ${IMAGE_HEIGHT - CURVE_HEIGHT}
-    C ${width * 0.25} ${IMAGE_HEIGHT - CURVE_HEIGHT - 10},
-      ${width * 0.65} ${IMAGE_HEIGHT + 10},
-      ${width} ${IMAGE_HEIGHT}
-    L ${width} ${IMAGE_HEIGHT + 10}
-    L 0 ${IMAGE_HEIGHT + 10}
+    M 0 ${IMAGE_HEIGHT}
+    L ${width} ${IMAGE_HEIGHT - CLIP_HEIGHT}
+    L ${width} ${IMAGE_HEIGHT}
     Z
   `;
 
   return (
     <Svg
       width={width}
-      height={IMAGE_HEIGHT + 10}
-      style={styles.curveOverlay}
+      height={IMAGE_HEIGHT}
+      style={styles.clipOverlay}
     >
       <Path d={d} fill={colors.background} />
     </Svg>
@@ -111,7 +103,7 @@ export default function OnboardingScreen() {
       {/* Image with SVG curve clip overlay */}
       <View style={styles.imageSection}>
         <Image source={item.image} style={styles.slideImage} />
-        <CurveOverlay />
+        <DiagonalClipOverlay />
       </View>
 
       {/* Content below image */}
@@ -173,9 +165,9 @@ const styles = StyleSheet.create({
     height: '100%',
     resizeMode: 'cover',
   },
-  curveOverlay: {
+  clipOverlay: {
     position: 'absolute',
-    bottom: -10,
+    bottom: 0,
     left: 0,
   },
   slideContent: {

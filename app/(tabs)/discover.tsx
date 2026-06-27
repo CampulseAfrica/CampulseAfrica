@@ -21,6 +21,10 @@ import {
   mockAcademicMaterials,
   mockEvents,
 } from '../../mocks';
+import { CampulseLogo } from '../../components/ui/Logo';
+import { SearchIcon, TrendIcon } from '../../components/ui/Icons';
+import { Bookmark } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -36,35 +40,45 @@ function TrendingTab() {
   return (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
       {/* Featured News Card */}
+      <Text style={styles.sectionTitle}>Featured News</Text>
       <View style={styles.featuredCard}>
         <Image source={{ uri: mockFeaturedNews.image }} style={styles.featuredImage} />
         <View style={styles.featuredContent}>
           <Text style={styles.featuredTitle}>{mockFeaturedNews.title}</Text>
-          <Text style={styles.featuredDesc} numberOfLines={2}>
+          <Text style={styles.featuredDesc} numberOfLines={3}>
             {mockFeaturedNews.description}
           </Text>
           <View style={styles.featuredMeta}>
-            <Text style={styles.featuredTime}>{mockFeaturedNews.timeAgo}</Text>
-            <Text style={styles.featuredDot}>·</Text>
-            <Text style={styles.featuredCategory}>{mockFeaturedNews.category}</Text>
+            <Text style={styles.featuredTime}>{mockFeaturedNews.timeAgo}. {mockFeaturedNews.category}</Text>
             <View style={{ flex: 1 }} />
-            <Text style={styles.bookmarkIcon}>🔖</Text>
+            <Bookmark size={16} color={colors.textPrimary} />
           </View>
         </View>
       </View>
 
       {/* Trending Topics */}
-      <Text style={styles.sectionTitle}>Trending Now</Text>
-      {mockTrendingTopics.map((topic) => (
-        <View key={topic.id} style={styles.trendingItem}>
-          <Text style={styles.trendingRank}>{topic.rank}</Text>
-          <View style={styles.trendingInfo}>
-            <Text style={styles.trendingHashtag}>{topic.hashtag}</Text>
-            <Text style={styles.trendingCount}>{topic.postsCount.toLocaleString()} posts</Text>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Lastest Update</Text>
+        <Text style={styles.seeMore}>See more</Text>
+      </View>
+      
+      <View style={styles.trendingList}>
+        {mockTrendingTopics.map((topic) => (
+          <View key={topic.id} style={styles.trendingItem}>
+            <Text style={styles.trendingRank}>{topic.rank}</Text>
+            <View style={styles.trendingInfo}>
+              <Text style={styles.trendingHashtag}>{topic.hashtag}</Text>
+              <Text style={styles.trendingCount}>{topic.postsCount.toLocaleString()} posts</Text>
+            </View>
+            {topic.isHot && (
+              <TrendIcon />
+            )}
           </View>
-          <Text style={styles.trendingIcon}>📈</Text>
-        </View>
-      ))}
+        ))}
+      </View>
+      
+      {/* Bottom padding for tab bar */}
+      <View style={{ height: 100 }} />
     </ScrollView>
   );
 }
@@ -89,6 +103,7 @@ function NewsTab() {
           )}
         </View>
       ))}
+      <View style={{ height: 100 }} />
     </ScrollView>
   );
 }
@@ -150,6 +165,7 @@ function JobsTab() {
           </View>
         ))}
       </ScrollView>
+      <View style={{ height: 100 }} />
     </ScrollView>
   );
 }
@@ -178,6 +194,7 @@ function AcademicTab() {
           </ImageBackground>
         </Pressable>
       ))}
+      <View style={{ height: 100 }} />
     </ScrollView>
   );
 }
@@ -197,12 +214,14 @@ function EventsTab() {
           <Text style={styles.eventBookmark}>🔖</Text>
         </View>
       ))}
+      <View style={{ height: 100 }} />
     </ScrollView>
   );
 }
 
 export default function DiscoverScreen() {
   const [activeTab, setActiveTab] = useState<DiscoverTab>('trending');
+  const router = useRouter();
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -217,35 +236,41 @@ export default function DiscoverScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Discover</Text>
+        <CampulseLogo width={131} height={26} />
+        <Pressable onPress={() => router.push('/search')}>
+          <SearchIcon />
+        </Pressable>
       </View>
 
       {/* Sub-tabs */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.subTabs}
-      >
-        {DISCOVER_TABS.map((tab) => (
-          <Pressable
-            key={tab.key}
-            style={[
-              styles.subTab,
-              activeTab === tab.key && styles.subTabActive,
-            ]}
-            onPress={() => setActiveTab(tab.key)}
-          >
-            <Text
+      <View style={styles.subTabsContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.subTabs}
+        >
+          {DISCOVER_TABS.map((tab) => (
+            <Pressable
+              key={tab.key}
               style={[
-                styles.subTabText,
-                activeTab === tab.key && styles.subTabTextActive,
+                styles.subTab,
+                activeTab === tab.key && styles.subTabActive,
               ]}
+              onPress={() => setActiveTab(tab.key)}
             >
-              {tab.label}
-            </Text>
-          </Pressable>
-        ))}
-      </ScrollView>
+              <Text
+                style={[
+                  styles.subTabText,
+                  activeTab === tab.key && styles.subTabTextActive,
+                ]}
+              >
+                {tab.label}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+        <View style={styles.subTabsBorder} />
+      </View>
 
       {renderTabContent()}
     </SafeAreaView>
@@ -255,58 +280,78 @@ export default function DiscoverScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#FAFAFA', // Slight off-white to match design
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
   },
-  headerTitle: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: colors.textPrimary,
+  subTabsContainer: {
+    marginBottom: spacing.md,
   },
   subTabs: {
     paddingHorizontal: spacing.lg,
-    gap: spacing.sm,
-    paddingBottom: spacing.md,
+    flexDirection: 'row',
   },
   subTab: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius['3xl'],
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.md,
+    marginRight: spacing.lg,
   },
   subTabActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primary,
+  },
+  subTabsBorder: {
+    height: 1,
+    backgroundColor: '#F0F0F0',
+    width: '100%',
+    marginTop: -1,
   },
   subTabText: {
     fontSize: 14,
     fontWeight: '500',
-    color: colors.textSecondary,
+    color: '#A0A0A0',
   },
   subTabTextActive: {
-    color: colors.textInverse,
+    color: colors.primary,
     fontWeight: '600',
   },
   tabContent: {
     flex: 1,
     paddingHorizontal: spacing.lg,
   },
+  // Sections
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    marginTop: spacing.xl,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
+    marginTop: spacing.md,
+  },
+  seeMore: {
+    fontSize: 13,
+    color: '#B4AEFF',
+    fontWeight: '500',
+  },
   // Featured News Card
   featuredCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: '#FFFFFF',
     borderRadius: borderRadius.lg,
     overflow: 'hidden',
-    marginBottom: spacing.xl,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
   },
   featuredImage: {
     width: '100%',
@@ -314,19 +359,21 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   featuredContent: {
-    padding: spacing.lg,
+    padding: spacing.md,
+    paddingTop: spacing.lg,
   },
   featuredTitle: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '700',
     color: colors.textPrimary,
     marginBottom: spacing.sm,
+    lineHeight: 22,
   },
   featuredDesc: {
     fontSize: 13,
     color: colors.textSecondary,
-    lineHeight: 18,
-    marginBottom: spacing.md,
+    lineHeight: 20,
+    marginBottom: spacing.lg,
   },
   featuredMeta: {
     flexDirection: 'row',
@@ -336,55 +383,35 @@ const styles = StyleSheet.create({
   featuredTime: {
     fontSize: 12,
     color: colors.textSecondary,
-  },
-  featuredDot: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  featuredCategory: {
-    fontSize: 12,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  bookmarkIcon: {
-    fontSize: 16,
-  },
-  // Section
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    marginBottom: spacing.lg,
+    fontWeight: '500',
   },
   // Trending
+  trendingList: {
+    paddingBottom: spacing.xl,
+  },
   trendingItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
   },
   trendingRank: {
-    width: 30,
-    fontSize: 16,
+    width: 32,
+    fontSize: 13,
     fontWeight: '700',
-    color: colors.textSecondary,
+    color: '#A0A0A0',
   },
   trendingInfo: {
     flex: 1,
   },
   trendingHashtag: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
     color: colors.textPrimary,
   },
   trendingCount: {
     fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  trendingIcon: {
-    fontSize: 16,
+    color: '#A0A0A0',
+    marginTop: 4,
   },
   // News
   newsItem: {

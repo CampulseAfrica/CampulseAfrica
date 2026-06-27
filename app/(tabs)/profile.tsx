@@ -12,7 +12,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { colors, spacing, borderRadius } from '../../theme';
 import { useAuthStore } from '../../store';
-import { mockUsers, mockPosts } from '../../mocks';
+import { mockPosts } from '../../mocks';
+import { mockUsers } from '../../services/mockDb';
 import { Post, VoteType } from '../../types';
 
 export default function ProfileScreen() {
@@ -20,7 +21,7 @@ export default function ProfileScreen() {
   const { currentUser, isAuthenticated, isGuest } = useAuthStore();
 
   // Use current user or first mock user as fallback
-  const user = currentUser ?? mockUsers[0];
+  const user = currentUser ?? Object.values(mockUsers)[0];
   const userPosts = mockPosts.filter((p) => p.user.id === user.id);
 
   if (!isAuthenticated) {

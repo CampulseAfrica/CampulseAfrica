@@ -1,21 +1,22 @@
 import { University, User } from '../types';
 
 export const universities: University[] = [
-  { id: 'uni-1', name: 'University of Benin', shortName: 'UNIBEN', location: 'Benin City, Edo State' },
-  { id: 'uni-2', name: 'University of Lagos', shortName: 'UNILAG', location: 'Lagos, Lagos State' },
+  { id: 'uni-1', name: 'University of Benin', shortName: 'UNIBEN', location: 'Benin City, Edo State', image: require('../assets/images/uni-logos/UNIBEN.jpg') },
+  { id: 'uni-2', name: 'University of Lagos', shortName: 'UNILAG', location: 'Lagos, Lagos State', image: require('../assets/images/uni-logos/UNILAG.jpg') },
   { id: 'uni-3', name: 'Ahmadu Bello University', shortName: 'ABU', location: 'Zaria, Kaduna State' },
-  { id: 'uni-4', name: 'University of Ibadan', shortName: 'UI', location: 'Ibadan, Oyo State' },
+  { id: 'uni-4', name: 'University of Ibadan', shortName: 'UI', location: 'Ibadan, Oyo State', image: require('../assets/images/uni-logos/University-of-Ibadan.jpg') },
   { id: 'uni-5', name: 'Obafemi Awolowo University', shortName: 'OAU', location: 'Ile-Ife, Osun State' },
   { id: 'uni-6', name: 'University of Nigeria', shortName: 'UNN', location: 'Nsukka, Enugu State' },
   { id: 'uni-7', name: 'University of Port Harcourt', shortName: 'UNIPORT', location: 'Port Harcourt, Rivers State' },
   { id: 'uni-8', name: 'University of Abuja', shortName: 'UNIABUJA', location: 'Abuja, FCT' },
   { id: 'uni-9', name: 'University of Ilorin', shortName: 'UNILORIN', location: 'Ilorin, Kwara State' },
   { id: 'uni-10', name: 'University of Calabar', shortName: 'UNICAL', location: 'Calabar, Cross River State' },
-  { id: 'uni-11', name: 'Covenant University', shortName: 'CU', location: 'Ota, Ogun State' },
-  { id: 'uni-12', name: 'University of Jos', shortName: 'UNIJOS', location: 'Jos, Plateau State' },
-  { id: 'uni-13', name: 'Federal University of Technology, Akure', shortName: 'FUTA', location: 'Akure, Ondo State' },
+  { id: 'uni-11', name: 'Covenant University', shortName: 'CU', location: 'Ota, Ogun State', image: require('../assets/images/uni-logos/Covenant-University.jpg') },
+  { id: 'uni-12', name: 'University of Jos', shortName: 'UNIJOS', location: 'Jos, Plateau State', image: require('../assets/images/uni-logos/unijos.jpg') },
+  { id: 'uni-13', name: 'Federal University of Technology, Akure', shortName: 'FUTA', location: 'Akure, Ondo State', image: require('../assets/images/uni-logos/FUTA.jpg') },
   { id: 'uni-14', name: 'Bayero University', shortName: 'BUK', location: 'Kano, Kano State' },
   { id: 'uni-15', name: 'University of Uyo', shortName: 'UNIUYO', location: 'Uyo, Akwa Ibom State' },
+  { id: 'uni-16', name: 'Benson Idahosa University', shortName: 'BIU', location: 'Benin City, Edo State', image: require('../assets/images/uni-logos/Benson-Idahosa-University-BIU.jpg') },
 ];
 
 export const mockUsers: User[] = [
@@ -420,5 +421,21 @@ export const mockUsers: User[] = [
     postsCount: 4,
     followersCount: 65,
     followingCount: 100,
+  },
+  {
+    id: 'user-26',
+    fullName: 'David Omoregie',
+    username: 'david_omoregie',
+    email: 'david@biu.edu',
+    avatar: 'https://i.pravatar.cc/150?img=61',
+    university: universities[15], // BIU
+    faculty: 'Business Administration',
+    bio: 'Business admin student. Entrepreneur.',
+    isVerified: false,
+    joinedDate: '2024-05-12',
+    reputation: 340,
+    postsCount: 15,
+    followersCount: 210,
+    followingCount: 150,
   },
 ];

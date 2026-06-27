@@ -3,6 +3,7 @@ export interface TrendingTopic {
   rank: number;
   hashtag: string;
   postsCount: number;
+  isHot?: boolean;
 }
 
 export interface NewsItem {

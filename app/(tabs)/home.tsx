@@ -7,6 +7,7 @@ import {
   Pressable,
   Image,
   RefreshControl,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -16,6 +17,8 @@ import { useGuestGate } from '../../hooks';
 import { postService } from '../../services';
 import { Post, VoteType, FeedTab } from '../../types';
 import { mockPosts } from '../../mocks';
+import { CampulseLogo } from '../../components/ui/Logo';
+import { SearchIcon, TrueIcon, MisleadingIcon, FalseIcon, CommentsIcon, ShareIcon } from '../../components/ui/Icons';
 
 function PostCard({
   post,
@@ -68,7 +71,8 @@ function PostCard({
       <View style={styles.voteContainer}>
         {(['true', 'misleading', 'false'] as VoteType[]).map((voteType) => {
           const isActive = post.userVote === voteType;
-          const icon = voteType === 'true' ? '✓' : voteType === 'misleading' ? 'ⓘ' : '✕';
+          const IconComponent = voteType === 'true' ? TrueIcon : voteType === 'misleading' ? MisleadingIcon : FalseIcon;
+          const iconColor = isActive ? colors.primary : '#757575';
           const label = voteType === 'true' ? 'True' : voteType === 'misleading' ? 'Misleading' : 'False';
 
           return (
@@ -80,14 +84,7 @@ function PostCard({
               ]}
               onPress={() => gateAction(() => onVote(post.id, voteType))}
             >
-              <Text
-                style={[
-                  styles.voteIcon,
-                  isActive && styles.voteIconActive,
-                ]}
-              >
-                {icon}
-              </Text>
+              <IconComponent color={iconColor} />
               <Text
                 style={[
                   styles.voteLabel,
@@ -104,23 +101,23 @@ function PostCard({
       {/* Stats */}
       <View style={styles.statsRow}>
         <View style={styles.stat}>
-          <Text style={styles.statIcon}>✓</Text>
+          <TrueIcon color="#757575" />
           <Text style={styles.statText}>{post.trueCount}</Text>
         </View>
         <View style={styles.stat}>
-          <Text style={styles.statIcon}>💬</Text>
-          <Text style={styles.statText}>{post.commentsCount}</Text>
+          <MisleadingIcon color="#757575" />
+          <Text style={styles.statText}>{post.misleadingCount}</Text>
         </View>
         <View style={styles.stat}>
-          <Text style={styles.statIcon}>✕</Text>
+          <FalseIcon color="#757575" />
           <Text style={styles.statText}>{post.falseCount}</Text>
         </View>
         <View style={styles.stat}>
-          <Text style={styles.statIcon}>🔖</Text>
-          <Text style={styles.statText}>{post.misleadingCount}</Text>
+          <CommentsIcon color="#757575" />
+          <Text style={styles.statText}>{post.commentsCount}</Text>
         </View>
         <Pressable style={styles.stat}>
-          <Text style={styles.statIcon}>↗</Text>
+          <ShareIcon color="#757575" />
           <Text style={styles.statText}>Share</Text>
         </Pressable>
       </View>
@@ -175,12 +172,9 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Campulse</Text>
-        <Pressable
-          style={styles.searchButton}
-          onPress={() => router.push('/search')}
-        >
-          <Text style={styles.searchIcon}>🔍</Text>
+        <CampulseLogo width={131} height={26} />
+        <Pressable onPress={() => router.push('/search')}>
+          <SearchIcon />
         </Pressable>
       </View>
 
@@ -242,7 +236,12 @@ export default function HomeScreen() {
       />
 
       {/* Guest Gate Modal */}
-      {showGateModal && (
+      <Modal
+        visible={showGateModal}
+        transparent
+        animationType="slide"
+        onRequestClose={dismissGateModal}
+      >
         <View style={styles.modalOverlay}>
           <Pressable style={styles.modalBackdrop} onPress={dismissGateModal} />
           <View style={styles.modalContent}>
@@ -264,7 +263,7 @@ export default function HomeScreen() {
             </Pressable>
           </View>
         </View>
-      )}
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -331,6 +330,7 @@ const styles = StyleSheet.create({
   },
   feedContent: {
     padding: spacing.lg,
+    paddingBottom: 100, // Extra padding to allow scrolling past the floating tab bar
   },
   // PostCard styles
   postCard: {

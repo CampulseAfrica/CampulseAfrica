@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { Image } from 'expo-image';
+import { Search, ChevronRight } from 'lucide-react-native';
 import { colors, spacing, borderRadius } from '../../theme';
 import { useAuthStore } from '../../store';
 import { universities } from '../../mocks/users';
@@ -40,37 +42,58 @@ export default function SelectUniversityScreen() {
       </View>
 
       <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search universities..."
-          placeholderTextColor={colors.textTertiary}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-        <Text style={styles.searchIcon}>🔍</Text>
+        <View style={styles.searchInputWrapper}>
+          <Search 
+            size={20} 
+            color={colors.textTertiary} 
+            style={styles.searchIcon} 
+          />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search universities..."
+            placeholderTextColor={colors.textTertiary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
       </View>
 
       <FlatList
         data={filteredUniversities}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
-        renderItem={({ item }) => (
-          <Pressable
-            style={({ pressed }) => [
-              styles.universityItem,
-              pressed && styles.universityItemPressed,
-            ]}
-            onPress={() => handleSelectUniversity(item)}
-          >
-            <View style={styles.universityInfo}>
-              <Text style={styles.universityName}>{item.name}</Text>
-              <Text style={styles.universityLocation}>{item.location}</Text>
-            </View>
-            <View style={styles.shortNameBadge}>
-              <Text style={styles.shortNameText}>{item.shortName}</Text>
-            </View>
-          </Pressable>
-        )}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => {
+          // Placeholder image for now. You can replace this with actual university images later.
+          const placeholderImage = 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=300&auto=format&fit=crop';
+          
+          return (
+            <Pressable
+              style={({ pressed }) => [
+                styles.universityItem,
+                pressed && styles.universityItemPressed,
+              ]}
+              onPress={() => handleSelectUniversity(item)}
+            >
+              <Image 
+                source={item.image ? item.image : { uri: placeholderImage }} 
+                style={styles.universityImage} 
+                contentFit="cover"
+                transition={200}
+              />
+              <View style={styles.universityInfo}>
+                <Text style={styles.universityName} numberOfLines={1}>{item.name}</Text>
+                <Text style={styles.universityLocation} numberOfLines={1}>{item.location}</Text>
+              </View>
+              <View style={styles.rightContent}>
+                <View style={styles.shortNameBadge}>
+                  <Text style={styles.shortNameText}>{item.shortName}</Text>
+                </View>
+                <ChevronRight size={20} color={colors.textTertiary} />
+              </View>
+            </Pressable>
+          );
+        }}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
 
@@ -94,93 +117,124 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: spacing['2xl'],
     paddingTop: spacing['4xl'],
-    paddingBottom: spacing.lg,
+    paddingBottom: spacing.xl,
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: '800',
     color: colors.textPrimary,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 16,
     color: colors.textSecondary,
-    lineHeight: 22,
+    lineHeight: 24,
   },
   searchContainer: {
     paddingHorizontal: spacing['2xl'],
-    paddingBottom: spacing.lg,
-    position: 'relative',
+    paddingBottom: spacing['2xl'],
   },
-  searchInput: {
+  searchInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.full,
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    fontSize: 15,
-    color: colors.textPrimary,
-    paddingRight: spacing['4xl'],
   },
   searchIcon: {
-    position: 'absolute',
-    right: spacing['4xl'],
-    top: spacing.md,
+    marginRight: spacing.sm,
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: spacing.md + 2,
     fontSize: 16,
+    color: colors.textPrimary,
   },
   listContent: {
     paddingHorizontal: spacing['2xl'],
+    paddingBottom: spacing['4xl'],
   },
   universityItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.lg,
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    marginBottom: spacing.sm,
+    borderRadius: borderRadius.xl,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    shadowColor: colors.textPrimary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+    elevation: 2,
+    overflow: 'hidden',
   },
   universityItemPressed: {
-    backgroundColor: colors.primaryLight,
+    backgroundColor: colors.background,
+    borderColor: colors.border,
+    transform: [{ scale: 0.98 }],
+  },
+  universityImage: {
+    width: 70,
+    alignSelf: 'stretch',
+    backgroundColor: colors.border,
   },
   universityInfo: {
     flex: 1,
+    marginRight: spacing.sm,
+    paddingVertical: spacing.lg,
+    paddingLeft: spacing.md,
   },
   universityName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.textPrimary,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.xs - 2,
+    letterSpacing: -0.3,
   },
   universityLocation: {
     fontSize: 13,
     color: colors.textSecondary,
   },
+  rightContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingRight: spacing.lg,
+  },
   shortNameBadge: {
-    backgroundColor: colors.primaryLight,
-    paddingHorizontal: spacing.md,
+    backgroundColor: colors.background,
+    paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
-    borderRadius: borderRadius.sm,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   shortNameText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.primary,
+    fontSize: 11,
+    fontWeight: '800',
+    color: colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   separator: {
-    height: spacing.xs,
+    height: spacing.md,
   },
   footer: {
     padding: spacing['2xl'],
     alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: colors.surface,
   },
   footerText: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.textSecondary,
   },
   footerLink: {
     color: colors.primary,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

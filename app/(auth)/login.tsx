@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router';
 import { colors, spacing, borderRadius } from '../../theme';
 import { useAuthStore } from '../../store';
 import { authService } from '../../services';
+import { mockApi } from '../../services/api';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -27,6 +28,16 @@ export default function LoginScreen() {
     const user = await authService.login({ email, school, password });
     setUser(user);
     router.replace('/(tabs)/home');
+  };
+
+  const handleQuickLogin = async (userId: string) => {
+    try {
+      const user = await mockApi.loginUser(userId);
+      setUser(user);
+      router.replace('/(tabs)/home');
+    } catch (error) {
+      console.error('Quick login failed:', error);
+    }
   };
 
   return (
@@ -111,6 +122,22 @@ export default function LoginScreen() {
           <Pressable style={styles.loginButton} onPress={handleLogin}>
             <Text style={styles.loginButtonText}>Log In</Text>
           </Pressable>
+
+          {/* Development Quick Login */}
+          <View style={styles.devContainer}>
+            <Text style={styles.devTitle}>Development: Quick Login</Text>
+            <View style={styles.devButtons}>
+              <Pressable style={styles.devBtn} onPress={() => handleQuickLogin('user_1')}>
+                <Text style={styles.devBtnText}>Jane</Text>
+              </Pressable>
+              <Pressable style={styles.devBtn} onPress={() => handleQuickLogin('user_2')}>
+                <Text style={styles.devBtnText}>Alex</Text>
+              </Pressable>
+              <Pressable style={styles.devBtn} onPress={() => handleQuickLogin('user_3')}>
+                <Text style={styles.devBtnText}>Sarah</Text>
+              </Pressable>
+            </View>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -216,6 +243,35 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: colors.textInverse,
     fontSize: 18,
+    fontWeight: '600',
+  },
+  devContainer: {
+    marginTop: spacing.xl,
+    paddingHorizontal: spacing['2xl'],
+    alignItems: 'center',
+    marginBottom: spacing['4xl'],
+  },
+  devTitle: {
+    fontSize: 13,
+    color: colors.textTertiary,
+    marginBottom: spacing.md,
+    fontWeight: '500',
+  },
+  devButtons: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  devBtn: {
+    backgroundColor: colors.surface,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  devBtnText: {
+    fontSize: 13,
+    color: colors.primary,
     fontWeight: '600',
   },
 });

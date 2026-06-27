@@ -404,7 +404,40 @@ export const mockPosts: Post[] = [
     createdAt: '2025-06-21T20:00:00Z',
     university: 'University of Ilorin',
   },
-  // Posts 26-50 (abbreviated for scroll depth)
+  // BIU Posts
+  {
+    id: 'post-26',
+    user: mockUsers[25], // David Omoregie
+    content: 'Just launched my new startup on campus today! If you need quick deliveries within BIU, hit me up. First 10 people get 50% off delivery fee. #BIU #Entrepreneur #CampusDelivery',
+    images: ['https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600'],
+    hashtags: ['BIU', 'Entrepreneur', 'CampusDelivery'],
+    trueCount: 45,
+    misleadingCount: 0,
+    falseCount: 2,
+    commentsCount: 15,
+    sharesCount: 20,
+    userVote: null,
+    isBookmarked: false,
+    createdAt: '2025-06-21T18:00:00Z',
+    university: 'Benson Idahosa University',
+  },
+  {
+    id: 'post-27',
+    user: mockUsers[25],
+    content: 'Chapel service was lit today. The guest minister really broke down the word. Who else was blessed? #BIU #ChapelService #Faith',
+    images: [],
+    hashtags: ['BIU', 'ChapelService', 'Faith'],
+    trueCount: 80,
+    misleadingCount: 2,
+    falseCount: 0,
+    commentsCount: 22,
+    sharesCount: 10,
+    userVote: null,
+    isBookmarked: false,
+    createdAt: '2025-06-21T14:00:00Z',
+    university: 'Benson Idahosa University',
+  },
+  // Posts 28-50 (abbreviated for scroll depth)
   ...Array.from({ length: 25 }, (_, i) => ({
     id: `post-${26 + i}`,
     user: mockUsers[i % mockUsers.length],

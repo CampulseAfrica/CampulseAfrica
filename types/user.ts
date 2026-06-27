@@ -3,6 +3,7 @@ export interface University {
   name: string;
   shortName: string;
   location: string;
+  image?: any;
 }
 
 export interface User {

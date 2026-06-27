@@ -11,8 +11,8 @@ export const mockFeaturedNews: FeaturedNews = {
 };
 
 export const mockTrendingTopics: TrendingTopic[] = [
-  { id: 'trend-1', rank: 1, hashtag: '#SUGElections', postsCount: 1240 },
-  { id: 'trend-2', rank: 2, hashtag: '#Hakathon', postsCount: 840 },
+  { id: 'trend-1', rank: 1, hashtag: '#SUGElections', postsCount: 1240, isHot: true },
+  { id: 'trend-2', rank: 2, hashtag: '#Hakathon', postsCount: 840, isHot: true },
   { id: 'trend-3', rank: 3, hashtag: '#ExamSeason', postsCount: 3040 },
   { id: 'trend-4', rank: 4, hashtag: '#MainGate', postsCount: 5400 },
   { id: 'trend-5', rank: 5, hashtag: '#UniZikSUG', postsCount: 321 },
