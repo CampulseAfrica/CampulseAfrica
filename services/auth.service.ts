@@ -1,5 +1,5 @@
 import { User } from '../types';
-import { mockUsers } from '../mocks';
+import { mockUsers } from './mockDb';
 
 interface SignUpData {
   fullName: string;
@@ -21,7 +21,7 @@ export const authService = {
     await delay(800);
     // Simulate creating a new user
     const newUser: User = {
-      ...mockUsers[0],
+      ...Object.values(mockUsers)[0],
       id: `user-new-${Date.now()}`,
       fullName: data.fullName,
       email: data.email,
@@ -37,9 +37,9 @@ export const authService = {
   async login(data: LoginData): Promise<User> {
     await delay(800);
     // Simulate login — return the first mock user
-    const user = mockUsers.find((u) => u.email === data.email);
+    const user = Object.values(mockUsers).find((u) => u.email === data.email);
     if (!user) {
-      return mockUsers[0];
+      return Object.values(mockUsers)[0];
     }
     return user;
   },
@@ -56,7 +56,7 @@ export const authService = {
 
   async getCurrentUser(): Promise<User | null> {
     await delay(400);
-    return mockUsers[0];
+    return Object.values(mockUsers)[0];
   },
 
   async forgotPassword(email: string): Promise<boolean> {

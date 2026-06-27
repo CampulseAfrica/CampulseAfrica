@@ -1,12 +1,12 @@
 import { UserProfile, Post } from '../types';
-import { mockUsers, mockPosts } from '../mocks';
+import { mockUsers, mockPosts } from './mockDb';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const profileService = {
   async getProfile(userId: string): Promise<UserProfile> {
     await delay(500);
-    const user = mockUsers.find((u) => u.id === userId) ?? mockUsers[0];
+    const user = Object.values(mockUsers).find((u) => u.id === userId) ?? Object.values(mockUsers)[0];
     return {
       ...user,
       isFollowing: false,
@@ -21,7 +21,7 @@ export const profileService = {
 
   async updateProfile(userId: string, updates: Partial<UserProfile>): Promise<UserProfile> {
     await delay(600);
-    const user = mockUsers.find((u) => u.id === userId) ?? mockUsers[0];
+    const user = Object.values(mockUsers).find((u) => u.id === userId) ?? Object.values(mockUsers)[0];
     return {
       ...user,
       ...updates,
@@ -42,7 +42,7 @@ export const profileService = {
 
   async getFollowers(userId: string): Promise<UserProfile[]> {
     await delay(500);
-    return mockUsers.slice(0, 10).map((u) => ({
+    return Object.values(mockUsers).slice(0, 10).map((u) => ({
       ...u,
       isFollowing: Math.random() > 0.5,
       isOwnProfile: false,
@@ -51,7 +51,7 @@ export const profileService = {
 
   async getFollowing(userId: string): Promise<UserProfile[]> {
     await delay(500);
-    return mockUsers.slice(5, 15).map((u) => ({
+    return Object.values(mockUsers).slice(5, 15).map((u) => ({
       ...u,
       isFollowing: true,
       isOwnProfile: false,

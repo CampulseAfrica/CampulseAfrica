@@ -77,3 +77,7 @@ export const mockUsers: Record<string, User> = {
     followingCount: 150,
   },
 };
+
+export * from './mockData/posts';
+export * from './mockData/discover';
+export * from './mockData/notifications';

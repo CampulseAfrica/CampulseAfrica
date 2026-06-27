@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,15 +12,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, borderRadius } from '../../theme';
-import { DiscoverTab } from '../../types';
-import {
-  mockFeaturedNews,
-  mockTrendingTopics,
-  mockNewsItems,
-  mockJobs,
-  mockAcademicMaterials,
-  mockEvents,
-} from '../../mocks';
+import { DiscoverTab, TrendingTopic, NewsItem, Job, AcademicMaterial, CampusEvent, FeaturedNews } from '../../types';
+import { discoverService } from '../../services';
+import { Skeleton } from '../../components/ui/Skeleton';
 import { CampulseLogo } from '../../components/ui/Logo';
 import { SearchIcon, TrendIcon } from '../../components/ui/Icons';
 import { Bookmark } from 'lucide-react-native';
@@ -37,19 +31,56 @@ const DISCOVER_TABS: { key: DiscoverTab; label: string }[] = [
 ];
 
 function TrendingTab() {
+  const [loading, setLoading] = useState(true);
+  const [featured, setFeatured] = useState<FeaturedNews | null>(null);
+  const [trending, setTrending] = useState<TrendingTopic[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    Promise.all([discoverService.getFeaturedNews(), discoverService.getTrending()]).then(([f, t]) => {
+      if (isMounted) {
+        setFeatured(f);
+        setTrending(t);
+        setLoading(false);
+      }
+    });
+    return () => { isMounted = false; };
+  }, []);
+
+  if (loading || !featured) {
+    return (
+      <View style={styles.tabContent}>
+        <Text style={styles.sectionTitle}>Featured News</Text>
+        <Skeleton height={280} borderRadius={borderRadius.lg} style={{ marginBottom: spacing.xl }} />
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Latest Update</Text>
+        </View>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.lg }}>
+            <Skeleton width={20} height={20} style={{ marginRight: spacing.md }} />
+            <View style={{ flex: 1, gap: 6 }}>
+              <Skeleton width="60%" height={16} />
+              <Skeleton width="40%" height={12} />
+            </View>
+          </View>
+        ))}
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
       {/* Featured News Card */}
       <Text style={styles.sectionTitle}>Featured News</Text>
       <View style={styles.featuredCard}>
-        <Image source={{ uri: mockFeaturedNews.image }} style={styles.featuredImage} />
+        <Image source={{ uri: featured.image }} style={styles.featuredImage} />
         <View style={styles.featuredContent}>
-          <Text style={styles.featuredTitle}>{mockFeaturedNews.title}</Text>
+          <Text style={styles.featuredTitle}>{featured.title}</Text>
           <Text style={styles.featuredDesc} numberOfLines={3}>
-            {mockFeaturedNews.description}
+            {featured.description}
           </Text>
           <View style={styles.featuredMeta}>
-            <Text style={styles.featuredTime}>{mockFeaturedNews.timeAgo}. {mockFeaturedNews.category}</Text>
+            <Text style={styles.featuredTime}>{featured.timeAgo}. {featured.category}</Text>
             <View style={{ flex: 1 }} />
             <Bookmark size={16} color={colors.textPrimary} />
           </View>
@@ -63,7 +94,7 @@ function TrendingTab() {
       </View>
       
       <View style={styles.trendingList}>
-        {mockTrendingTopics.map((topic) => (
+        {trending.map((topic) => (
           <View key={topic.id} style={styles.trendingItem}>
             <Text style={styles.trendingRank}>{topic.rank}</Text>
             <View style={styles.trendingInfo}>
@@ -84,9 +115,36 @@ function TrendingTab() {
 }
 
 function NewsTab() {
+  const [loading, setLoading] = useState(true);
+  const [news, setNews] = useState<NewsItem[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    discoverService.getNews().then((data) => {
+      if (isMounted) { setNews(data); setLoading(false); }
+    });
+    return () => { isMounted = false; };
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.tabContent}>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <View key={i} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.md, gap: spacing.md }}>
+            <Skeleton width={80} height={16} />
+            <View style={{ flex: 1, gap: 6 }}>
+              <Skeleton width="100%" height={16} />
+              <Skeleton width="80%" height={16} />
+            </View>
+          </View>
+        ))}
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
-      {mockNewsItems.map((item) => (
+      {news.map((item) => (
         <View key={item.id} style={styles.newsItem}>
           <View style={styles.newsDate}>
             <Text style={styles.newsDateText}>{item.date}</Text>
@@ -109,8 +167,36 @@ function NewsTab() {
 }
 
 function JobsTab() {
-  const jobs = mockJobs.filter((j) => j.type === 'job');
-  const abroad = mockJobs.filter((j) => j.type === 'abroad');
+  const [loading, setLoading] = useState(true);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [abroad, setAbroad] = useState<Job[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    Promise.all([discoverService.getJobs(), discoverService.getAbroadOpportunities()]).then(([j, a]) => {
+      if (isMounted) { setJobs(j); setAbroad(a); setLoading(false); }
+    });
+    return () => { isMounted = false; };
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.tabContent}>
+        <Text style={styles.sectionTitle}>Job Opportunities</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+          {Array.from({ length: 2 }).map((_, i) => (
+            <Skeleton key={i} width={width * 0.7} height={240} borderRadius={borderRadius.lg} style={{ marginRight: spacing.lg }} />
+          ))}
+        </ScrollView>
+        <Text style={[styles.sectionTitle, { marginTop: spacing['2xl'] }]}>Study Abroad</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+          {Array.from({ length: 2 }).map((_, i) => (
+            <Skeleton key={i} width={width * 0.7} height={240} borderRadius={borderRadius.lg} style={{ marginRight: spacing.lg }} />
+          ))}
+        </ScrollView>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
@@ -171,10 +257,32 @@ function JobsTab() {
 }
 
 function AcademicTab() {
+  const [loading, setLoading] = useState(true);
+  const [materials, setMaterials] = useState<AcademicMaterial[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    discoverService.getAcademicMaterials().then((data) => {
+      if (isMounted) { setMaterials(data); setLoading(false); }
+    });
+    return () => { isMounted = false; };
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.tabContent}>
+        <Text style={styles.sectionTitle}>Study Materials</Text>
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} height={200} borderRadius={borderRadius.lg} style={{ marginBottom: spacing.lg }} />
+        ))}
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
       <Text style={styles.sectionTitle}>Study Materials</Text>
-      {mockAcademicMaterials.map((item) => (
+      {materials.map((item) => (
         <Pressable key={item.id} style={styles.academicCard}>
           <ImageBackground
             source={{ uri: item.image }}
@@ -200,10 +308,32 @@ function AcademicTab() {
 }
 
 function EventsTab() {
+  const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState<CampusEvent[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    discoverService.getEvents().then((data) => {
+      if (isMounted) { setEvents(data); setLoading(false); }
+    });
+    return () => { isMounted = false; };
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.tabContent}>
+        <Text style={styles.sectionTitle}>Upcoming Events</Text>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} height={100} borderRadius={borderRadius.lg} style={{ marginBottom: spacing.md }} />
+        ))}
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
       <Text style={styles.sectionTitle}>Upcoming Events</Text>
-      {mockEvents.map((event) => (
+      {events.map((event) => (
         <View key={event.id} style={styles.eventCard}>
           <Image source={{ uri: event.image }} style={styles.eventImage} />
           <View style={styles.eventInfo}>

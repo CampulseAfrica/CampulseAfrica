@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, borderRadius } from '../../theme';
 import { Notification } from '../../types';
-import { mockNotifications } from '../../mocks';
+import { notificationService } from '../../services';
+import { Skeleton } from '../../components/ui/Skeleton';
 
 function NotificationItem({ item }: { item: Notification }) {
   return (
@@ -26,20 +27,48 @@ function NotificationItem({ item }: { item: Notification }) {
 }
 
 export default function NotificationScreen() {
+  const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    notificationService.getNotifications().then((data) => {
+      if (isMounted) {
+        setNotifications(data);
+        setLoading(false);
+      }
+    });
+    return () => { isMounted = false; };
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Notification</Text>
       </View>
 
-      <FlatList
-        data={mockNotifications}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <NotificationItem item={item} />}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-      />
+      {loading ? (
+        <View style={styles.listContent}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <View key={i} style={[styles.notifItem, { marginBottom: spacing.sm }]}>
+              <View style={styles.unreadDot} />
+              <View style={styles.notifContent}>
+                <Skeleton width="90%" height={14} style={{ marginBottom: spacing.xs }} />
+                <Skeleton width="40%" height={12} />
+              </View>
+            </View>
+          ))}
+        </View>
+      ) : (
+        <FlatList
+          data={notifications}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <NotificationItem item={item} />}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+        />
+      )}
     </SafeAreaView>
   );
 }

@@ -1,5 +1,5 @@
 import { Post, VoteType, Comment } from '../types';
-import { mockPosts, mockUsers } from '../mocks';
+import { mockPosts, mockUsers } from './mockDb';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -39,7 +39,7 @@ export const postService = {
     return Array.from({ length: 8 }, (_, i) => ({
       id: `comment-${postId}-${i}`,
       postId,
-      user: mockUsers[i % mockUsers.length],
+      user: Object.values(mockUsers)[i % Object.values(mockUsers).length],
       content: [
         'This is so true! Been saying this for weeks.',
         'Not sure about this one... needs more context.',
@@ -60,7 +60,7 @@ export const postService = {
     return {
       id: `comment-new-${Date.now()}`,
       postId,
-      user: mockUsers[0],
+      user: Object.values(mockUsers)[0],
       content,
       createdAt: new Date().toISOString(),
       likesCount: 0,

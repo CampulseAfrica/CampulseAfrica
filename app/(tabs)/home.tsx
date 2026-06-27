@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,9 +16,9 @@ import { useAuthStore } from '../../store';
 import { useGuestGate } from '../../hooks';
 import { postService } from '../../services';
 import { Post, VoteType, FeedTab } from '../../types';
-import { mockPosts } from '../../mocks';
 import { CampulseLogo } from '../../components/ui/Logo';
 import { SearchIcon, TrueIcon, MisleadingIcon, FalseIcon, CommentsIcon, ShareIcon } from '../../components/ui/Icons';
+import { Skeleton } from '../../components/ui/Skeleton';
 
 function PostCard({
   post,
@@ -131,13 +131,20 @@ export default function HomeScreen() {
   const { gateAction, showGateModal, dismissGateModal } = useGuestGate();
   const [activeTab, setActiveTab] = useState<FeedTab>('mySchool');
   const [refreshing, setRefreshing] = useState(false);
-  const [posts, setPosts] = useState<Post[]>(mockPosts);
+  const [loading, setLoading] = useState(true);
+  const [posts, setPosts] = useState<Post[]>([]);
 
-  const filteredPosts = activeTab === 'mySchool' && selectedUniversity
-    ? posts.filter((p) => p.university === selectedUniversity.name)
-    : activeTab === 'otherCampus' && selectedUniversity
-    ? posts.filter((p) => p.university !== selectedUniversity.name)
-    : posts;
+  useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
+    postService.getPosts(activeTab, selectedUniversity?.name).then((newPosts) => {
+      if (isMounted) {
+        setPosts(newPosts);
+        setLoading(false);
+      }
+    });
+    return () => { isMounted = false; };
+  }, [activeTab, selectedUniversity]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -211,29 +218,48 @@ export default function HomeScreen() {
       </View>
 
       {/* Posts Feed */}
-      <FlatList
-        data={filteredPosts}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <PostCard
-            post={item}
-            onVote={handleVote}
-            onPress={() => router.push(`/post/${item.id}`)}
-            isGuest={!isAuthenticated}
-            gateAction={gateAction}
-          />
-        )}
-        contentContainerStyle={styles.feedContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colors.primary}
-          />
-        }
-        ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
-      />
+      {loading ? (
+        <View style={styles.feedContent}>
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <View key={idx} style={[styles.postCard, { marginBottom: spacing.sm }]}>
+              <View style={styles.postHeader}>
+                <Skeleton width={44} height={44} borderRadius={22} style={{ marginRight: spacing.md }} />
+                <View style={{ flex: 1, gap: 4 }}>
+                  <Skeleton width="40%" height={14} />
+                  <Skeleton width="25%" height={12} />
+                </View>
+              </View>
+              <Skeleton width="100%" height={14} style={{ marginBottom: 4 }} />
+              <Skeleton width="80%" height={14} style={{ marginBottom: spacing.md }} />
+              <Skeleton width="100%" height={200} borderRadius={borderRadius.md} style={{ marginBottom: spacing.md }} />
+            </View>
+          ))}
+        </View>
+      ) : (
+        <FlatList
+          data={posts}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <PostCard
+              post={item}
+              onVote={handleVote}
+              onPress={() => router.push(`/post/${item.id}`)}
+              isGuest={!isAuthenticated}
+              gateAction={gateAction}
+            />
+          )}
+          contentContainerStyle={styles.feedContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.primary}
+            />
+          }
+          ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
+        />
+      )}
 
       {/* Guest Gate Modal */}
       <Modal

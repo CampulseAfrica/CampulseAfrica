@@ -1,5 +1,5 @@
 import { Notification } from '../types';
-import { mockNotifications } from '../mocks';
+import { mockNotifications } from './mockDb';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,17 +12,31 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { colors, spacing, borderRadius } from '../../theme';
 import { useAuthStore } from '../../store';
-import { mockPosts } from '../../mocks';
+import { profileService } from '../../services';
 import { mockUsers } from '../../services/mockDb';
 import { Post, VoteType } from '../../types';
+import { Skeleton } from '../../components/ui/Skeleton';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { currentUser, isAuthenticated, isGuest } = useAuthStore();
 
-  // Use current user or first mock user as fallback
   const user = currentUser ?? Object.values(mockUsers)[0];
-  const userPosts = mockPosts.filter((p) => p.user.id === user.id);
+  const [loading, setLoading] = useState(true);
+  const [userPosts, setUserPosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (user?.id) {
+      profileService.getUserPosts(user.id).then((posts) => {
+        if (isMounted) {
+          setUserPosts(posts);
+          setLoading(false);
+        }
+      });
+    }
+    return () => { isMounted = false; };
+  }, [user?.id]);
 
   if (!isAuthenticated) {
     return (
@@ -109,7 +123,19 @@ export default function ProfileScreen() {
         {/* User's Posts */}
         <View style={styles.postsSection}>
           <Text style={styles.postsSectionTitle}>Posts</Text>
-          {userPosts.length > 0 ? (
+          {loading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <View key={i} style={styles.miniPostCard}>
+                <Skeleton width="100%" height={14} style={{ marginBottom: 4 }} />
+                <Skeleton width="80%" height={14} style={{ marginBottom: spacing.md }} />
+                <View style={styles.miniPostStats}>
+                  <Skeleton width={40} height={14} />
+                  <Skeleton width={40} height={14} />
+                  <Skeleton width={40} height={14} />
+                </View>
+              </View>
+            ))
+          ) : userPosts.length > 0 ? (
             userPosts.map((post) => (
               <Pressable
                 key={post.id}

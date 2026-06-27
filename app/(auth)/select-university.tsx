@@ -13,7 +13,7 @@ import { Image } from 'expo-image';
 import { Search, ChevronRight } from 'lucide-react-native';
 import { colors, spacing, borderRadius } from '../../theme';
 import { useAuthStore } from '../../store';
-import { universities } from '../../mocks/users';
+import { mockUniversities } from '../../services/mockDb';
 import { University } from '../../types';
 
 export default function SelectUniversityScreen() {
@@ -21,7 +21,7 @@ export default function SelectUniversityScreen() {
   const { setGuest } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredUniversities = universities.filter(
+  const filteredUniversities = Object.values(mockUniversities).filter(
     (uni) =>
       uni.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       uni.shortName.toLowerCase().includes(searchQuery.toLowerCase())

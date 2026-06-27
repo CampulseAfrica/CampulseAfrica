@@ -17,7 +17,7 @@ import { useAuthStore } from '../../store';
 import { useGuestGate } from '../../hooks';
 import { postService } from '../../services';
 import { Post, Comment, VoteType } from '../../types';
-import { mockPosts } from '../../mocks';
+import { Skeleton } from '../../components/ui/Skeleton';
 
 export default function PostDetailScreen() {
   const router = useRouter();
@@ -28,13 +28,23 @@ export default function PostDetailScreen() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
 
-  useEffect(() => {
-    const foundPost = mockPosts.find((p) => p.id === id) ?? null;
-    setPost(foundPost);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    let isMounted = true;
     if (id) {
-      postService.getComments(id).then(setComments);
+      Promise.all([
+        postService.getPostById(id),
+        postService.getComments(id),
+      ]).then(([fetchedPost, fetchedComments]) => {
+        if (isMounted) {
+          setPost(fetchedPost);
+          setComments(fetchedComments);
+          setLoading(false);
+        }
+      });
     }
+    return () => { isMounted = false; };
   }, [id]);
 
   const handleAddComment = async () => {
@@ -52,11 +62,37 @@ export default function PostDetailScreen() {
     });
   };
 
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <Pressable onPress={() => router.back()}>
+            <Text style={styles.backText}>← Back</Text>
+          </Pressable>
+          <Text style={styles.headerTitle}>Post</Text>
+          <View style={{ width: 60 }} />
+        </View>
+        <View style={{ padding: spacing.lg }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
+            <Skeleton width={48} height={48} borderRadius={24} style={{ marginRight: spacing.md }} />
+            <View style={{ flex: 1, gap: 6 }}>
+              <Skeleton width="50%" height={16} />
+              <Skeleton width="30%" height={14} />
+            </View>
+          </View>
+          <Skeleton width="100%" height={16} style={{ marginBottom: 6 }} />
+          <Skeleton width="80%" height={16} style={{ marginBottom: spacing.lg }} />
+          <Skeleton width="100%" height={220} borderRadius={borderRadius.md} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   if (!post) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading...</Text>
+          <Text style={styles.loadingText}>Post not found.</Text>
         </View>
       </SafeAreaView>
     );

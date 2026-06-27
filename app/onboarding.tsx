@@ -109,17 +109,6 @@ export default function OnboardingScreen() {
       {/* Content below image */}
       <View style={styles.slideContent}>
         <Text style={styles.slideTitle}>{item.title}</Text>
-        <View style={styles.dotsContainer}>
-          {slides.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.dot,
-                index === activeIndex && styles.dotActive,
-              ]}
-            />
-          ))}
-        </View>
       </View>
     </View>
   );
@@ -139,6 +128,17 @@ export default function OnboardingScreen() {
         bounces={false}
       />
       <View style={styles.buttonContainer}>
+        <View style={styles.dotsContainer}>
+          {slides.map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.dot,
+                index === activeIndex && styles.dotActive,
+              ]}
+            />
+          ))}
+        </View>
         <Pressable style={styles.button} onPress={handleNext}>
           <Text style={styles.buttonText}>{slides[activeIndex].buttonText}</Text>
         </Pressable>
@@ -186,7 +186,9 @@ const styles = StyleSheet.create({
   },
   dotsContainer: {
     flexDirection: 'row',
+    justifyContent: 'center',
     gap: spacing.sm,
+    marginBottom: spacing['2xl'],
   },
   dot: {
     width: 8,

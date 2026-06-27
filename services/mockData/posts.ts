@@ -1,5 +1,5 @@
 import { Post } from '../types';
-import { mockUsers } from './users';
+import { mockUsers, mockUniversities } from '../mockDb';
 
 export const mockPosts: Post[] = [
   {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,13 +10,28 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { colors, spacing, borderRadius } from '../theme';
-import { mockTrendingTopics } from '../mocks';
-
+import { discoverService } from '../services';
+import { TrendingTopic } from '../types';
+import { Skeleton } from '../components/ui/Skeleton';
 export default function SearchScreen() {
   const router = useRouter();
   const [query, setQuery] = useState('');
 
-  const filteredTopics = mockTrendingTopics.filter((t) =>
+  const [loading, setLoading] = useState(true);
+  const [trending, setTrending] = useState<TrendingTopic[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    discoverService.getTrending().then((data) => {
+      if (isMounted) {
+        setTrending(data);
+        setLoading(false);
+      }
+    });
+    return () => { isMounted = false; };
+  }, []);
+
+  const filteredTopics = trending.filter((t) =>
     t.hashtag.toLowerCase().includes(query.toLowerCase())
   );
 
@@ -42,12 +57,21 @@ export default function SearchScreen() {
       {query.length === 0 ? (
         <View style={styles.recentSection}>
           <Text style={styles.recentTitle}>Trending Topics</Text>
-          {mockTrendingTopics.slice(0, 5).map((topic) => (
-            <Pressable key={topic.id} style={styles.topicItem}>
-              <Text style={styles.topicHashtag}>{topic.hashtag}</Text>
-              <Text style={styles.topicCount}>{topic.postsCount.toLocaleString()} posts</Text>
-            </Pressable>
-          ))}
+          {loading ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <View key={i} style={styles.topicItem}>
+                <Skeleton width="40%" height={16} />
+                <Skeleton width={60} height={14} />
+              </View>
+            ))
+          ) : (
+            trending.slice(0, 5).map((topic) => (
+              <Pressable key={topic.id} style={styles.topicItem}>
+                <Text style={styles.topicHashtag}>{topic.hashtag}</Text>
+                <Text style={styles.topicCount}>{topic.postsCount.toLocaleString()} posts</Text>
+              </Pressable>
+            ))
+          )}
         </View>
       ) : (
         <FlatList

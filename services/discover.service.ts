@@ -6,7 +6,7 @@ import {
   mockJobs,
   mockAcademicMaterials,
   mockEvents,
-} from '../mocks';
+} from './mockDb';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

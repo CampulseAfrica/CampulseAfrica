@@ -10,7 +10,7 @@ export default function AuthLayout() {
       }}
     >
       <Stack.Screen name="select-university" />
-      <Stack.Screen name="sign-up" />
+      <Stack.Screen name="sign-up" options={{ animation: 'slide_from_left' }} />
       <Stack.Screen name="login" />
       <Stack.Screen name="otp" />
     </Stack>
