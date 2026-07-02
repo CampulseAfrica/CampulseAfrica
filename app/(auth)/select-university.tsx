@@ -106,7 +106,6 @@ export default function SelectUniversityScreen() {
           <FlashList
             data={filteredUniversities}
             keyExtractor={(item) => item.id}
-            estimatedItemSize={80}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => {

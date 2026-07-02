@@ -167,7 +167,7 @@ export default function ProfileScreen() {
             </View>
             <View>
               <Text style={styles.badgeTitle}>Reputation</Text>
-              <Text style={styles.badgeValue}>Level 3</Text>
+              <Text style={styles.badgeValue}>Level {user.reputation}</Text>
             </View>
           </View>
           
@@ -177,7 +177,7 @@ export default function ProfileScreen() {
             </View>
             <View>
               <Text style={styles.badgeTitle}>Joined</Text>
-              <Text style={styles.badgeValue}>Sep 2025</Text>
+              <Text style={styles.badgeValue}>{user.joinedDate}</Text>
             </View>
           </View>
           

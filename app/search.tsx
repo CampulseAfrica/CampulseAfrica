@@ -78,7 +78,6 @@ export default function SearchScreen() {
         <FlashList
           data={filteredTopics}
           keyExtractor={(item) => item.id}
-          estimatedItemSize={80}
           contentContainerStyle={styles.results}
           renderItem={({ item }) => (
             <Pressable style={styles.resultItem}>

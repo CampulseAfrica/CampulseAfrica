@@ -128,6 +128,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing['2xl'],
     paddingTop: spacing['3xl'],
   },
+  header: {
+    marginBottom: spacing['3xl'],
+  },
   backButton: {
     marginBottom: spacing['3xl'],
   },

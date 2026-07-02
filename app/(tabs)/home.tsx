@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,11 @@ import {
   Image,
   RefreshControl,
   Modal,
+  FlatList,
+  Dimensions,
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
+import Reanimated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { colors, spacing, borderRadius } from '../../theme';
@@ -22,34 +25,44 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { PostCard } from '../../components/post/PostCard';
 
+const { width } = Dimensions.get('window');
 
-export default function HomeScreen() {
-  const router = useRouter();
+const FEED_TABS: { key: FeedTab; label: string }[] = [
+  { key: 'mySchool', label: 'My School' },
+  { key: 'otherCampus', label: 'Other campus' },
+];
+
+const FeedTabContent = ({ tab, isActive }: { tab: FeedTab; isActive: boolean }) => {
   const { selectedUniversity, isAuthenticated } = useAuthStore();
-  const { gateAction, showGateModal, dismissGateModal } = useGuestGate();
-  const [activeTab, setActiveTab] = useState<FeedTab>('mySchool');
+  const { gateAction } = useGuestGate();
+  const router = useRouter();
+  
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [posts, setPosts] = useState<Post[]>([]);
+  const hasFetched = useRef(false);
 
   useEffect(() => {
+    if (!isActive && !hasFetched.current) return;
+    hasFetched.current = true;
+    
     let isMounted = true;
     setLoading(true);
-    postService.getPosts(activeTab, selectedUniversity?.name).then((newPosts) => {
+    postService.getPosts(tab, selectedUniversity?.name).then((newPosts) => {
       if (isMounted) {
         setPosts(newPosts);
         setLoading(false);
       }
     });
     return () => { isMounted = false; };
-  }, [activeTab, selectedUniversity]);
+  }, [isActive, tab, selectedUniversity]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    const newPosts = await postService.getPosts(activeTab, selectedUniversity?.name);
+    const newPosts = await postService.getPosts(tab, selectedUniversity?.name);
     setPosts(newPosts);
     setRefreshing(false);
-  }, [activeTab, selectedUniversity]);
+  }, [tab, selectedUniversity]);
 
   const handleVote = (postId: string, voteType: VoteType) => {
     setPosts((prev) =>
@@ -73,6 +86,115 @@ export default function HomeScreen() {
     );
   };
 
+  if (loading) {
+    return (
+      <View style={[styles.feedContent, { width }]}>
+        {Array.from({ length: 3 }).map((_, idx) => (
+          <View key={idx} style={[styles.postCard, { marginBottom: spacing.sm }]}>
+            <View style={styles.postHeader}>
+              <Skeleton width={44} height={44} borderRadius={22} style={{ marginRight: spacing.md }} />
+              <View style={{ flex: 1, gap: 4 }}>
+                <Skeleton width="40%" height={14} />
+                <Skeleton width="25%" height={12} />
+              </View>
+            </View>
+            <Skeleton width="100%" height={14} style={{ marginBottom: 4 }} />
+            <Skeleton width="80%" height={14} style={{ marginBottom: spacing.md }} />
+            <Skeleton width="100%" height={200} borderRadius={borderRadius.md} style={{ marginBottom: spacing.md }} />
+          </View>
+        ))}
+      </View>
+    );
+  }
+
+  return (
+    <View style={{ width, flex: 1 }}>
+      <FlashList
+        data={posts}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <PostCard
+            post={item}
+            onVote={(postId, voteType) => gateAction(() => handleVote(postId, voteType))}
+            onPress={(postId) => router.push(`/post/${postId}`)}
+            onFollow={() => gateAction(() => {})}
+            onComment={() => gateAction(() => {})}
+            onShare={() => gateAction(() => {})}
+            isGuest={!isAuthenticated}
+          />
+        )}
+        contentContainerStyle={styles.feedContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
+        }
+        ListEmptyComponent={
+          <EmptyState
+            icon="📭"
+            title="No posts yet"
+            subtitle="Be the first to share something on campus!"
+          />
+        }
+        ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
+      />
+    </View>
+  );
+};
+
+export default function HomeScreen() {
+  const router = useRouter();
+  const { selectedUniversity, isAuthenticated } = useAuthStore();
+  const { gateAction, showGateModal, dismissGateModal } = useGuestGate();
+  const [activeTab, setActiveTab] = useState<FeedTab>('mySchool');
+  
+  const contentListRef = useRef<FlatList>(null);
+  const tabLayouts = useRef<{ [key: string]: { x: number; width: number } }>({});
+  const isTappingTab = useRef(false);
+
+  const indicatorLeft = useSharedValue(0);
+  const indicatorWidth = useSharedValue(0);
+
+  const animatedIndicatorStyle = useAnimatedStyle(() => {
+    return {
+      left: withSpring(indicatorLeft.value, { mass: 1, damping: 15, stiffness: 120 }),
+      width: withSpring(indicatorWidth.value, { mass: 1, damping: 15, stiffness: 120 }),
+    };
+  });
+
+  const syncTabBar = useCallback((key: FeedTab) => {
+    setActiveTab(key);
+    const layout = tabLayouts.current[key];
+    if (layout) {
+      indicatorLeft.value = layout.x + layout.width * 0.2;
+      indicatorWidth.value = layout.width * 0.6;
+    }
+  }, []);
+
+  const handleTabLayout = (key: FeedTab, layout: { x: number; width: number }) => {
+    tabLayouts.current[key] = layout;
+    if (key === activeTab) {
+      indicatorLeft.value = layout.x + layout.width * 0.2;
+      indicatorWidth.value = layout.width * 0.6;
+    }
+  };
+
+  const handleTabPress = (key: FeedTab, index: number) => {
+    isTappingTab.current = true;
+    syncTabBar(key);
+    contentListRef.current?.scrollToIndex({ index, animated: true });
+  };
+
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
+  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
+    if (viewableItems.length > 0 && !isTappingTab.current) {
+      syncTabBar(viewableItems[0].item.key);
+    }
+  }).current;
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -85,89 +207,52 @@ export default function HomeScreen() {
 
       {/* Feed Tabs */}
       <View style={styles.feedTabs}>
-        <Pressable
-          style={styles.feedTab}
-          onPress={() => setActiveTab('mySchool')}
-        >
-          <Text
-            style={[
-              styles.feedTabText,
-              activeTab === 'mySchool' && styles.feedTabTextActive,
-            ]}
+        {FEED_TABS.map((tab, index) => (
+          <Pressable
+            key={tab.key}
+            style={styles.feedTab}
+            onPress={() => handleTabPress(tab.key, index)}
+            onLayout={(e) => handleTabLayout(tab.key, e.nativeEvent.layout)}
           >
-            My School
-          </Text>
-          {activeTab === 'mySchool' && <View style={styles.feedTabIndicator} />}
-        </Pressable>
-        <Pressable
-          style={styles.feedTab}
-          onPress={() => setActiveTab('otherCampus')}
-        >
-          <Text
-            style={[
-              styles.feedTabText,
-              activeTab === 'otherCampus' && styles.feedTabTextActive,
-            ]}
-          >
-            Other campus
-          </Text>
-          {activeTab === 'otherCampus' && <View style={styles.feedTabIndicator} />}
-        </Pressable>
+            <Text
+              style={[
+                styles.feedTabText,
+                activeTab === tab.key && styles.feedTabTextActive,
+              ]}
+            >
+              {tab.label}
+            </Text>
+          </Pressable>
+        ))}
+        <Reanimated.View
+          style={[styles.feedTabIndicator, animatedIndicatorStyle]}
+        />
       </View>
 
       {/* Posts Feed */}
-      {loading ? (
-        <View style={styles.feedContent}>
-          {Array.from({ length: 3 }).map((_, idx) => (
-            <View key={idx} style={[styles.postCard, { marginBottom: spacing.sm }]}>
-              <View style={styles.postHeader}>
-                <Skeleton width={44} height={44} borderRadius={22} style={{ marginRight: spacing.md }} />
-                <View style={{ flex: 1, gap: 4 }}>
-                  <Skeleton width="40%" height={14} />
-                  <Skeleton width="25%" height={12} />
-                </View>
-              </View>
-              <Skeleton width="100%" height={14} style={{ marginBottom: 4 }} />
-              <Skeleton width="80%" height={14} style={{ marginBottom: spacing.md }} />
-              <Skeleton width="100%" height={200} borderRadius={borderRadius.md} style={{ marginBottom: spacing.md }} />
-            </View>
-          ))}
-        </View>
-      ) : (
-        <FlashList
-          data={posts}
-          keyExtractor={(item) => item.id}
-          estimatedItemSize={250}
-          renderItem={({ item }) => (
-            <PostCard
-              post={item}
-              onVote={(postId, voteType) => gateAction(() => handleVote(postId, voteType))}
-              onPress={(postId) => router.push(`/post/${postId}`)}
-              onFollow={() => gateAction(() => {})}
-              onComment={() => gateAction(() => {})}
-              onShare={() => gateAction(() => {})}
-              isGuest={!isAuthenticated}
-            />
-          )}
-          contentContainerStyle={styles.feedContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={colors.primary}
-            />
-          }
-          ListEmptyComponent={
-            <EmptyState
-              icon="📭"
-              title="No posts yet"
-              subtitle="Be the first to share something on campus!"
-            />
-          }
-          ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
-        />
-      )}
+      <FlatList
+        ref={contentListRef}
+        data={FEED_TABS}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(item) => item.key}
+        getItemLayout={(data, index) => ({
+          length: width,
+          offset: width * index,
+          index,
+        })}
+        renderItem={({ item }) => (
+          <FeedTabContent tab={item.key} isActive={activeTab === item.key} />
+        )}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
+        onScrollAnimationEnd={() => { isTappingTab.current = false; }}
+        onMomentumScrollEnd={() => { isTappingTab.current = false; }}
+        initialNumToRender={1}
+        maxToRenderPerBatch={1}
+        windowSize={3}
+      />
 
       {/* Guest Gate Modal */}
       <Modal
@@ -254,9 +339,8 @@ const styles = StyleSheet.create({
   },
   feedTabIndicator: {
     position: 'absolute',
-    bottom: 0,
-    left: '20%',
-    right: '20%',
+    bottom: -1,
+    left: 0,
     height: 3,
     backgroundColor: colors.primary,
     borderTopLeftRadius: 2,

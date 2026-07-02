@@ -118,7 +118,6 @@ export default function PostDetailScreen() {
         <FlashList
           data={comments}
           keyExtractor={(item) => item.id}
-          estimatedItemSize={100}
           ListHeaderComponent={() => (
             <View>
               {/* Post Content */}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,9 @@ import {
   ImageBackground,
   Dimensions,
 } from 'react-native';
+import { FlatList as RNGHFlatList, ScrollView as RNGHScrollView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Reanimated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { colors, spacing, borderRadius } from '../../theme';
 import { DiscoverTab, TrendingTopic, NewsItem, Job, AcademicMaterial, CampusEvent, FeaturedNews } from '../../types';
 import { discoverService } from '../../services';
@@ -26,7 +28,7 @@ const { width } = Dimensions.get('window');
 const DISCOVER_TABS: { key: DiscoverTab; label: string }[] = [
   { key: 'trending', label: 'Trending' },
   { key: 'news', label: 'News' },
-  { key: 'jobs', label: 'Jobs' },
+  { key: 'jobs', label: 'Opportunities' },
   { key: 'academic', label: 'Academic' },
   { key: 'events', label: 'Events' },
 ];
@@ -191,29 +193,29 @@ function JobsTab() {
   if (loading) {
     return (
       <View style={styles.tabContent}>
-        <Text style={styles.sectionTitle}>Job Opportunities</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+        <Text style={styles.sectionTitle}>Opportunities</Text>
+        <RNGHScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
           {Array.from({ length: 2 }).map((_, i) => (
             <Skeleton key={i} width={width * 0.7} height={240} borderRadius={borderRadius.lg} style={{ marginRight: spacing.lg }} />
           ))}
-        </ScrollView>
+        </RNGHScrollView>
         <Text style={[styles.sectionTitle, { marginTop: spacing['2xl'] }]}>Study Abroad</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+        <RNGHScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
           {Array.from({ length: 2 }).map((_, i) => (
             <Skeleton key={i} width={width * 0.7} height={240} borderRadius={borderRadius.lg} style={{ marginRight: spacing.lg }} />
           ))}
-        </ScrollView>
+        </RNGHScrollView>
       </View>
     );
   }
 
   return (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
-      <Text style={styles.sectionTitle}>Job Opportunities</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+      <Text style={styles.sectionTitle}>Opportunities</Text>
+      <RNGHScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
         {jobs.length === 0 ? (
           <View style={{ width: width - 48 }}>
-            <EmptyState icon="💼" title="No jobs available" subtitle="Check back later" />
+            <EmptyState icon="💼" title="No opportunities available" subtitle="Check back later" />
           </View>
         ) : (
           jobs.map((job) => (
@@ -231,7 +233,7 @@ function JobsTab() {
                     <Text style={styles.jobTitle} numberOfLines={1}>{job.title}</Text>
                     <Text style={styles.jobDesc} numberOfLines={2}>{job.description}</Text>
                     <Pressable style={styles.applyButton}>
-                      <Text style={styles.applyButtonText}>Apply For Job</Text>
+                      <Text style={styles.applyButtonText}>Apply</Text>
                     </Pressable>
                   </View>
                 </View>
@@ -239,10 +241,10 @@ function JobsTab() {
             </View>
           ))
         )}
-      </ScrollView>
+      </RNGHScrollView>
 
       <Text style={[styles.sectionTitle, { marginTop: spacing['2xl'] }]}>Study Abroad</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+      <RNGHScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
         {abroad.length === 0 ? (
           <View style={{ width: width - 48 }}>
             <EmptyState icon="✈️" title="No opportunities found" subtitle="Check back later" />
@@ -271,7 +273,7 @@ function JobsTab() {
             </View>
           ))
         )}
-      </ScrollView>
+      </RNGHScrollView>
       <View style={{ height: 100 }} />
     </ScrollView>
   );
@@ -380,14 +382,66 @@ function EventsTab() {
 export default function DiscoverScreen() {
   const [activeTab, setActiveTab] = useState<DiscoverTab>('trending');
   const router = useRouter();
+  const scrollViewRef = useRef<ScrollView>(null);
+  const contentListRef = useRef<any>(null);
+  const tabLayouts = useRef<{ [key: string]: { x: number; width: number } }>({});
+  const isTappingTab = useRef(false);
 
-  const renderTabContent = () => {
-    switch (activeTab) {
+  const indicatorLeft = useSharedValue(0);
+  const indicatorWidth = useSharedValue(0);
+
+  const animatedIndicatorStyle = useAnimatedStyle(() => {
+    return {
+      left: withSpring(indicatorLeft.value, { mass: 1, damping: 15, stiffness: 120 }),
+      width: withSpring(indicatorWidth.value, { mass: 1, damping: 15, stiffness: 120 }),
+    };
+  });
+
+  const animateIndicator = (layout: { x: number; width: number }) => {
+    indicatorLeft.value = layout.x;
+    indicatorWidth.value = layout.width;
+  };
+
+  const syncTabBar = useCallback((key: DiscoverTab) => {
+    setActiveTab(key);
+    const layout = tabLayouts.current[key];
+    if (layout) {
+      animateIndicator(layout);
+      if (scrollViewRef.current) {
+        const centerOffset = layout.x + layout.width / 2 - width / 2;
+        scrollViewRef.current.scrollTo({ x: Math.max(0, centerOffset), animated: true });
+      }
+    }
+  }, []);
+
+  const handleTabLayout = (key: DiscoverTab, layout: { x: number; width: number }) => {
+    tabLayouts.current[key] = layout;
+    if (key === activeTab) {
+      animateIndicator(layout);
+    }
+  };
+
+  const handleTabPress = (key: DiscoverTab, index: number) => {
+    isTappingTab.current = true;
+    syncTabBar(key);
+    contentListRef.current?.scrollToIndex({ index, animated: true });
+  };
+
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
+  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
+    if (viewableItems.length > 0 && !isTappingTab.current) {
+      syncTabBar(viewableItems[0].item.key);
+    }
+  }).current;
+
+  const renderTabContent = (key: DiscoverTab) => {
+    switch (key) {
       case 'trending': return <TrendingTab />;
       case 'news': return <NewsTab />;
       case 'jobs': return <JobsTab />;
       case 'academic': return <AcademicTab />;
       case 'events': return <EventsTab />;
+      default: return null;
     }
   };
 
@@ -403,18 +457,17 @@ export default function DiscoverScreen() {
       {/* Sub-tabs */}
       <View style={styles.subTabsContainer}>
         <ScrollView
+          ref={scrollViewRef}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.subTabs}
         >
-          {DISCOVER_TABS.map((tab) => (
+          {DISCOVER_TABS.map((tab, index) => (
             <Pressable
               key={tab.key}
-              style={[
-                styles.subTab,
-                activeTab === tab.key && styles.subTabActive,
-              ]}
-              onPress={() => setActiveTab(tab.key)}
+              style={styles.subTab}
+              onPress={() => handleTabPress(tab.key, index)}
+              onLayout={(e) => handleTabLayout(tab.key, e.nativeEvent.layout)}
             >
               <Text
                 style={[
@@ -426,11 +479,41 @@ export default function DiscoverScreen() {
               </Text>
             </Pressable>
           ))}
+          <Reanimated.View
+            style={[
+              styles.activeIndicator,
+              animatedIndicatorStyle,
+            ]}
+          />
         </ScrollView>
         <View style={styles.subTabsBorder} />
       </View>
 
-      {renderTabContent()}
+      <RNGHFlatList
+        ref={contentListRef}
+        data={DISCOVER_TABS}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(item) => item.key}
+        getItemLayout={(data, index) => ({
+          length: width,
+          offset: width * index,
+          index,
+        })}
+        renderItem={({ item }) => (
+          <View style={{ width }}>
+            {renderTabContent(item.key)}
+          </View>
+        )}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
+        onScrollAnimationEnd={() => { isTappingTab.current = false; }}
+        onMomentumScrollEnd={() => { isTappingTab.current = false; }}
+        initialNumToRender={1}
+        maxToRenderPerBatch={1}
+        windowSize={3}
+      />
     </SafeAreaView>
   );
 }
@@ -460,9 +543,13 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     marginRight: spacing.lg,
   },
-  subTabActive: {
-    borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
+  activeIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    height: 2,
+    backgroundColor: colors.primary,
+    borderRadius: 2,
   },
   subTabsBorder: {
     height: 1,
