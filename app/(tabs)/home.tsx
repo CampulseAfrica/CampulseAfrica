@@ -15,8 +15,8 @@ import Reanimated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { colors, spacing, borderRadius } from '../../theme';
-import { useAuthStore } from '../../store';
-import { useGuestGate } from '../../hooks';
+import { useAuthStore, useCacheStore, useToastStore } from '../../store';
+import { useGuestGate, useNetworkStatus } from '../../hooks';
 import { postService } from '../../services';
 import { Post, VoteType, FeedTab } from '../../types';
 import { CampulseLogo } from '../../components/ui/Logo';
@@ -35,11 +35,19 @@ const FEED_TABS: { key: FeedTab; label: string }[] = [
 const FeedTabContent = ({ tab, isActive }: { tab: FeedTab; isActive: boolean }) => {
   const { selectedUniversity, isAuthenticated } = useAuthStore();
   const { gateAction } = useGuestGate();
+  const { checkConnection } = useNetworkStatus();
+  const showToast = useToastStore((s) => s.show);
+  const cachedPosts = useCacheStore((s) =>
+    tab === 'mySchool' ? s.mySchoolPosts : s.otherCampusPosts
+  );
+  const setCachedPosts = useCacheStore((s) =>
+    tab === 'mySchool' ? s.setMySchoolPosts : s.setOtherCampusPosts
+  );
   const router = useRouter();
   
   const [refreshing, setRefreshing] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(cachedPosts.length === 0); // Skip skeleton if cache exists
+  const [posts, setPosts] = useState<Post[]>(cachedPosts); // Initialize with cached data
   const hasFetched = useRef(false);
 
   useEffect(() => {
@@ -47,22 +55,43 @@ const FeedTabContent = ({ tab, isActive }: { tab: FeedTab; isActive: boolean }) 
     hasFetched.current = true;
     
     let isMounted = true;
-    setLoading(true);
-    postService.getPosts(tab, selectedUniversity?.name).then((newPosts) => {
-      if (isMounted) {
-        setPosts(newPosts);
-        setLoading(false);
-      }
-    });
+    if (posts.length === 0) setLoading(true);
+
+    postService.getPosts(tab, selectedUniversity?.name)
+      .then((newPosts) => {
+        if (isMounted) {
+          setPosts(newPosts);
+          setCachedPosts(newPosts);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        // Network failed — keep showing cached data
+        if (isMounted) setLoading(false);
+      });
     return () => { isMounted = false; };
   }, [isActive, tab, selectedUniversity]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    const newPosts = await postService.getPosts(tab, selectedUniversity?.name);
-    setPosts(newPosts);
+    try {
+      const newPosts = await postService.getPosts(tab, selectedUniversity?.name);
+      setPosts(newPosts);
+      setCachedPosts(newPosts);
+    } catch {
+      showToast('No internet connection');
+    }
     setRefreshing(false);
   }, [tab, selectedUniversity]);
+
+  const offlineGate = useCallback(async (action: () => void) => {
+    const connected = await checkConnection();
+    if (!connected) {
+      showToast('No internet connection');
+      return;
+    }
+    action();
+  }, [checkConnection, showToast]);
 
   const handleVote = (postId: string, voteType: VoteType) => {
     setPosts((prev) =>
@@ -115,11 +144,11 @@ const FeedTabContent = ({ tab, isActive }: { tab: FeedTab; isActive: boolean }) 
         renderItem={({ item }) => (
           <PostCard
             post={item}
-            onVote={(postId, voteType) => gateAction(() => handleVote(postId, voteType))}
+            onVote={(postId, voteType) => gateAction(() => offlineGate(() => handleVote(postId, voteType)))}
             onPress={(postId) => router.push(`/post/${postId}`)}
-            onFollow={() => gateAction(() => {})}
-            onComment={() => gateAction(() => {})}
-            onShare={() => gateAction(() => {})}
+            onFollow={() => gateAction(() => offlineGate(() => {}))}
+            onComment={() => gateAction(() => offlineGate(() => {}))}
+            onShare={() => gateAction(() => offlineGate(() => {}))}
             isGuest={!isAuthenticated}
           />
         )}

@@ -2,10 +2,10 @@ import React from 'react';
 import {
   View,
   Text,
-  Image,
   Pressable,
   StyleSheet,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
@@ -145,7 +145,8 @@ export const PostCard: React.FC<PostCardProps> = ({
         <Image
           source={{ uri: post.images[0] }}
           style={styles.postImage}
-          resizeMode="cover"
+          contentFit="cover"
+          cachePolicy="disk"
         />
       )}
 

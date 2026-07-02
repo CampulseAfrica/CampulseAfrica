@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Image, Text, StyleSheet, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import { Image } from 'expo-image';
 import { colors } from '../../theme/colors';
 import { borderRadius } from '../../theme/borderRadius';
 
@@ -31,6 +32,7 @@ export const Avatar: React.FC<AvatarProps> = ({
     <View style={[styles.wrapper, containerStyle]}>
       <Image
         source={{ uri }}
+        cachePolicy="disk"
         style={[
           styles.image,
           {

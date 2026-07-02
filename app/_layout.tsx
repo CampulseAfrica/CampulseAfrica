@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { colors } from '../theme';
+import { Toast } from '../components/ui/Toast';
 
 // Suppress expo-router's internal unhandled promise rejections during route initialization
 LogBox.ignoreLogs([
@@ -34,6 +35,7 @@ export default function RootLayout() {
           />
         </Stack>
       </SafeAreaProvider>
+      <Toast />
     </GestureHandlerRootView>
   );
 }

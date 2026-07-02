@@ -10,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, borderRadius } from '../../theme';
 import { Notification } from '../../types';
 import { notificationService } from '../../services';
+import { useCacheStore } from '../../store';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
 
@@ -28,17 +29,26 @@ function NotificationItem({ item }: { item: Notification }) {
 }
 
 export default function NotificationScreen() {
-  const [loading, setLoading] = useState(true);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const cachedNotifications = useCacheStore((s) => s.notifications);
+  const setCachedNotifications = useCacheStore((s) => s.setNotifications);
+
+  const [loading, setLoading] = useState(cachedNotifications.length === 0);
+  const [notifications, setNotifications] = useState<Notification[]>(cachedNotifications);
 
   useEffect(() => {
     let isMounted = true;
-    notificationService.getNotifications().then((data) => {
-      if (isMounted) {
-        setNotifications(data);
-        setLoading(false);
-      }
-    });
+    notificationService.getNotifications()
+      .then((data) => {
+        if (isMounted) {
+          setNotifications(data);
+          setCachedNotifications(data);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        // Network failed — keep showing cached data
+        if (isMounted) setLoading(false);
+      });
     return () => { isMounted = false; };
   }, []);
 
