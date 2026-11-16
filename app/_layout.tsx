@@ -4,24 +4,30 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { colors } from '../theme';
+import { useThemeStore } from '../store/themeStore';
 import { Toast } from '../components/ui/Toast';
 
-// Suppress expo-router's internal unhandled promise rejections during route initialization
+// Suppress expo-router's internal unhandled promise rejections and React 19 timing warnings during route initialization
 LogBox.ignoreLogs([
   'Uncaught (in promise',
   'TypeError: undefined is not a function',
+  "Can't perform a React state update on a component that hasn't mounted yet",
 ]);
+
+function ThemedStatusBar() {
+  const isDark = useThemeStore((s) => s.mode === 'dark');
+  return <StatusBar style={isDark ? "light" : "dark"} />;
+}
 
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <StatusBar style="dark" />
+        <ThemedStatusBar />
         <Stack
           screenOptions={{
             headerShown: false,
-            contentStyle: { backgroundColor: colors.background },
+            contentStyle: { backgroundColor: '#12121A' },
             animation: 'slide_from_right',
           }}
         >

@@ -9,18 +9,19 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { colors, spacing, borderRadius, typography } from '../../theme';
+import { colors as defaultColors, spacing, borderRadius, typography, useTheme } from '../../theme';
 import { useAuthStore } from '../../store';
 import { profileService } from '../../services';
 import { Post, VoteType } from '../../types';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { CampulseLogo } from '../../components/ui/Logo';
-import { SearchIcon, ReputationIcon, CalendarIcon, VerifiedBadge, SettingsGearIcon, EditIcon, UniversityIcon } from '../../components/ui/Icons';
+import { SearchIcon, ReputationIcon, CalendarIcon, SettingsGearIcon, EditIcon, UniversityIcon, VerifiedBadge } from '../../components/ui/Icons';
 import { PostCard } from '../../components/post/PostCard';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { isDark, colors } = useTheme();
   const { currentUser, isAuthenticated } = useAuthStore();
   const user = currentUser;
   
@@ -64,21 +65,21 @@ export default function ProfileScreen() {
 
   if (!isAuthenticated) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.guestContainer}>
           <Text style={styles.guestIcon}>👤</Text>
-          <Text style={styles.guestTitle}>Sign in to view your profile</Text>
-          <Text style={styles.guestSubtitle}>
+          <Text style={[styles.guestTitle, { color: colors.textPrimary }]}>Sign in to view your profile</Text>
+          <Text style={[styles.guestSubtitle, { color: colors.textSecondary }]}>
             Create an account to build your campus reputation
           </Text>
           <Pressable
-            style={styles.signUpButton}
+            style={[styles.signUpButton, { backgroundColor: colors.primary }]}
             onPress={() => router.push('/(auth)/sign-up')}
           >
-            <Text style={styles.signUpButtonText}>Sign Up</Text>
+            <Text style={[styles.signUpButtonText, { color: '#FFFFFF' }]}>Sign Up</Text>
           </Pressable>
           <Pressable onPress={() => router.push('/(auth)/login')}>
-            <Text style={styles.loginLink}>Already have an account? Log In</Text>
+            <Text style={[styles.loginLink, { color: colors.primary }]}>Already have an account? Log In</Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -87,7 +88,7 @@ export default function ProfileScreen() {
 
   if (!user) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={{ flex: 1, padding: spacing.lg }}>
           <Skeleton width={100} height={100} borderRadius={50} style={{ alignSelf: 'center', marginTop: 100 }} />
           <Skeleton width={150} height={20} style={{ alignSelf: 'center', marginTop: 20 }} />
@@ -97,12 +98,12 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <CampulseLogo width={131} height={26} />
+      <View style={[styles.header, { backgroundColor: colors.background }]}>
+        <CampulseLogo width={131} height={26} color={colors.primary} />
         <Pressable onPress={() => router.push('/search')}>
-          <SearchIcon />
+          <SearchIcon bgColor={isDark ? colors.surfaceElevated : '#EBEBEB'} iconColor={colors.primary} />
         </Pressable>
       </View>
 
@@ -117,75 +118,77 @@ export default function ProfileScreen() {
 
         {/* Profile Controls & Avatar Overlap */}
         <View style={styles.controlsRow}>
-          <View style={styles.avatarWrapper}>
+          <View style={[styles.avatarWrapper, { backgroundColor: colors.background }]}>
             <Image source={{ uri: user.avatar }} style={styles.profileAvatar} />
           </View>
           <View style={styles.actionButtons}>
-            <Pressable style={styles.editButton}>
+            <Pressable style={[styles.editButton, { backgroundColor: colors.surfaceElevated }]}>
               <EditIcon color={colors.textPrimary} width={12} height={12} />
-              <Text style={styles.editButtonText}>Edit</Text>
+              <Text style={[styles.editButtonText, { color: colors.textPrimary }]}>Edit</Text>
             </Pressable>
-            <Pressable style={styles.settingsButton} onPress={() => router.push('/settings')}>
-              <SettingsGearIcon color="#757575" width={20} height={20} />
+            <Pressable style={[styles.settingsButton, { backgroundColor: colors.surfaceElevated }]} onPress={() => router.push('/settings')}>
+              <SettingsGearIcon color={colors.textSecondary} width={20} height={20} />
             </Pressable>
           </View>
         </View>
 
         {/* User Info */}
         <View style={styles.userInfo}>
-          <Text style={styles.fullName}>{user.fullName}</Text>
-          <Text style={styles.username}>@{user.username}</Text>
+          <View style={styles.nameRow}>
+            <Text style={[styles.fullName, { color: colors.textPrimary }]}>{user.fullName}</Text>
+            {user.isVerified && <VerifiedBadge width={18} height={18} />}
+          </View>
+          <Text style={[styles.username, { color: colors.primary }]}>@{user.username}</Text>
           
-          <Text style={styles.faculty}>{user.faculty}</Text>
+          <Text style={[styles.faculty, { color: colors.textPrimary }]}>{user.faculty}</Text>
           <View style={styles.universityRow}>
             <UniversityIcon width={14} height={14} />
-            <Text style={styles.universityName}>{user.university.name}</Text>
+            <Text style={[styles.universityName, { color: colors.textSecondary }]}>{user.university.name}</Text>
           </View>
         </View>
 
         {/* Stats */}
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>{user.postsCount}</Text>
-            <Text style={styles.statLabel}>Post</Text>
+            <Text style={[styles.statValue, { color: colors.textPrimary }]}>{user.postsCount}</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Post</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>{user.followersCount >= 1000 ? (user.followersCount/1000).toFixed(1) + 'K' : user.followersCount}</Text>
-            <Text style={styles.statLabel}>Followers</Text>
+            <Text style={[styles.statValue, { color: colors.textPrimary }]}>{user.followersCount >= 1000 ? (user.followersCount/1000).toFixed(1) + 'K' : user.followersCount}</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Followers</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>{user.followingCount}</Text>
-            <Text style={styles.statLabel}>Following</Text>
+            <Text style={[styles.statValue, { color: colors.textPrimary }]}>{user.followingCount}</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Following</Text>
           </View>
         </View>
 
         {/* Badges */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.badgesContainer}>
-          <View style={styles.badgeCard}>
-            <View style={[styles.badgeIconWrapper, { backgroundColor: '#F0EEFF' }]}>
+          <View style={[styles.badgeCard, { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: isDark ? 1 : 0 }]}>
+            <View style={[styles.badgeIconWrapper, { backgroundColor: isDark ? colors.primaryLight : '#F0EEFF' }]}>
               <ReputationIcon width={20} height={20} />
             </View>
             <View>
-              <Text style={styles.badgeTitle}>Reputation</Text>
-              <Text style={styles.badgeValue}>Level {user.reputation}</Text>
+              <Text style={[styles.badgeTitle, { color: colors.textSecondary }]}>Reputation</Text>
+              <Text style={[styles.badgeValue, { color: colors.textPrimary }]}>Level {user.reputation}</Text>
             </View>
           </View>
           
-          <View style={styles.badgeCard}>
-            <View style={[styles.badgeIconWrapper, { backgroundColor: '#F0EEFF' }]}>
+          <View style={[styles.badgeCard, { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: isDark ? 1 : 0 }]}>
+            <View style={[styles.badgeIconWrapper, { backgroundColor: isDark ? colors.primaryLight : '#F0EEFF' }]}>
               <CalendarIcon width={20} height={20} />
             </View>
             <View>
-              <Text style={styles.badgeTitle}>Joined</Text>
-              <Text style={styles.badgeValue}>{user.joinedDate}</Text>
+              <Text style={[styles.badgeTitle, { color: colors.textSecondary }]}>Joined</Text>
+              <Text style={[styles.badgeValue, { color: colors.textPrimary }]}>{user.joinedDate}</Text>
             </View>
           </View>
-          
         </ScrollView>
 
         {/* User's Posts */}
         <View style={styles.postsSection}>
-          <Text style={styles.postsSectionTitle}>My Posts</Text>
+          <Text style={[styles.postsSectionTitle, { color: colors.textPrimary }]}>My Posts</Text>
           {loading ? (
             <View style={{ padding: spacing.md }}>
                <Skeleton width="100%" height={100} style={{ marginBottom: spacing.md }} />
@@ -217,7 +220,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: defaultColors.background,
   },
   header: {
     flexDirection: 'row',
@@ -225,7 +228,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: defaultColors.background,
   },
   scrollContent: {
     paddingBottom: 100,
@@ -251,13 +254,13 @@ const styles = StyleSheet.create({
   avatarWrapper: {
     borderRadius: 50,
     padding: 3,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: defaultColors.background,
   },
   profileAvatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: colors.surface,
+    backgroundColor: defaultColors.surface,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -277,7 +280,7 @@ const styles = StyleSheet.create({
   editButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
   },
   settingsButton: {
     backgroundColor: '#F5F5F5',
@@ -291,21 +294,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     marginTop: spacing.md,
   },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   fullName: {
     fontSize: typography.h3.fontSize,
     fontWeight: 'bold',
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
   },
   username: {
     fontSize: 14,
-    color: colors.primary,
+    color: defaultColors.primary,
     marginTop: 2,
   },
   faculty: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.textPrimary,
-    marginTop: spacing.sm,
+    color: defaultColors.textPrimary,
   },
   universityRow: {
     flexDirection: 'row',
@@ -331,7 +338,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
   },
   statLabel: {
     fontSize: 14,
@@ -343,7 +350,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   badgeCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: defaultColors.surface,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     flexDirection: 'row',
@@ -366,7 +373,7 @@ const styles = StyleSheet.create({
   badgeValue: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
     marginTop: 2,
   },
   postsSection: {
@@ -375,7 +382,7 @@ const styles = StyleSheet.create({
   postsSectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
     paddingHorizontal: spacing.lg,
     marginBottom: spacing.md,
   },
@@ -393,31 +400,31 @@ const styles = StyleSheet.create({
   guestTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
     textAlign: 'center',
     marginBottom: spacing.sm,
   },
   guestSubtitle: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: defaultColors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: spacing['3xl'],
   },
   signUpButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: defaultColors.primary,
     paddingHorizontal: spacing['5xl'],
     paddingVertical: spacing.lg,
     borderRadius: borderRadius['3xl'],
     marginBottom: spacing.lg,
   },
   signUpButtonText: {
-    color: colors.surface,
+    color: defaultColors.surface,
     fontSize: 16,
     fontWeight: '600',
   },
   loginLink: {
-    color: colors.primary,
+    color: defaultColors.primary,
     fontSize: 14,
     fontWeight: '500',
   },

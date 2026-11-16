@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TextInput, Text, StyleSheet } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 import { borderRadius } from '../../theme/borderRadius';
@@ -16,16 +16,26 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   onChangeText,
   placeholder = 'Search...',
 }) => {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.surface,
+          borderColor: colors.border,
+        },
+      ]}
+    >
       <TextInput
-        style={styles.input}
+        style={[styles.input, { color: colors.textPrimary }]}
         placeholder={placeholder}
         placeholderTextColor={colors.textTertiary}
         value={value}
         onChangeText={onChangeText}
       />
-      <View style={styles.iconCircle}>
+      <View style={[styles.iconCircle, { backgroundColor: colors.primary }]}>
         <Text style={styles.icon}>🔍</Text>
       </View>
     </View>
@@ -36,10 +46,8 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
     borderRadius: borderRadius['3xl'],
     borderWidth: 1,
-    borderColor: colors.border,
     paddingLeft: spacing.lg,
     paddingRight: spacing.xs,
     paddingVertical: spacing.xs,
@@ -48,14 +56,12 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: typography.body.fontSize,
     fontWeight: typography.body.fontWeight,
-    color: colors.textPrimary,
     paddingVertical: spacing.sm,
   },
   iconCircle: {
     width: 36,
     height: 36,
     borderRadius: borderRadius.full,
-    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },

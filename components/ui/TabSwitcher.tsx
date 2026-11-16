@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 
@@ -15,20 +15,33 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
   activeIndex,
   onTabChange,
 }) => {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          borderBottomColor: colors.divider,
+          backgroundColor: colors.surface,
+        },
+      ]}
+    >
       {tabs.map((tab, index) => {
         const isActive = index === activeIndex;
         return (
           <Pressable
             key={tab}
             onPress={() => onTabChange(index)}
-            style={[styles.tab, isActive && styles.activeTab]}
+            style={[
+              styles.tab,
+              isActive && { borderBottomColor: colors.primary },
+            ]}
           >
             <Text
               style={[
                 styles.tabText,
-                isActive && styles.activeTabText,
+                { color: isActive ? colors.primary : colors.textSecondary },
               ]}
             >
               {tab}
@@ -44,8 +57,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
-    backgroundColor: colors.surface,
   },
   tab: {
     flex: 1,
@@ -54,15 +65,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
   },
-  activeTab: {
-    borderBottomColor: colors.primary,
-  },
   tabText: {
     fontSize: typography.bodySemibold.fontSize,
     fontWeight: typography.bodySemibold.fontWeight,
-    color: colors.textSecondary,
-  },
-  activeTabText: {
-    color: colors.primary,
   },
 });

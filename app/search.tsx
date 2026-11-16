@@ -10,12 +10,14 @@ import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
-import { colors, spacing, borderRadius } from '../theme';
+import { colors as defaultColors, spacing, borderRadius, useTheme } from '../theme';
 import { discoverService } from '../services';
 import { TrendingTopic } from '../types';
 import { Skeleton } from '../components/ui/Skeleton';
+
 export default function SearchScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
   const [query, setQuery] = useState('');
 
   const [loading, setLoading] = useState(true);
@@ -37,7 +39,7 @@ export default function SearchScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={{ padding: spacing.xs }}>
           <ChevronLeft color={colors.textPrimary} size={24} />
@@ -46,7 +48,14 @@ export default function SearchScreen() {
 
       <View style={styles.searchContainer}>
         <TextInput
-          style={styles.searchInput}
+          style={[
+            styles.searchInput,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+              color: colors.textPrimary,
+            },
+          ]}
           placeholder="Search posts, users, topics..."
           placeholderTextColor={colors.textTertiary}
           value={query}
@@ -57,19 +66,19 @@ export default function SearchScreen() {
 
       {query.length === 0 ? (
         <View style={styles.recentSection}>
-          <Text style={styles.recentTitle}>Trending Topics</Text>
+          <Text style={[styles.recentTitle, { color: colors.textPrimary }]}>Trending Topics</Text>
           {loading ? (
             Array.from({ length: 5 }).map((_, i) => (
-              <View key={i} style={styles.topicItem}>
+              <View key={i} style={[styles.topicItem, { borderBottomColor: colors.border }]}>
                 <Skeleton width="40%" height={16} />
                 <Skeleton width={60} height={14} />
               </View>
             ))
           ) : (
             trending.slice(0, 5).map((topic) => (
-              <Pressable key={topic.id} style={styles.topicItem}>
-                <Text style={styles.topicHashtag}>{topic.hashtag}</Text>
-                <Text style={styles.topicCount}>{topic.postsCount.toLocaleString()} posts</Text>
+              <Pressable key={topic.id} style={[styles.topicItem, { borderBottomColor: colors.border }]}>
+                <Text style={[styles.topicHashtag, { color: colors.textPrimary }]}>{topic.hashtag}</Text>
+                <Text style={[styles.topicCount, { color: colors.textSecondary }]}>{topic.postsCount.toLocaleString()} posts</Text>
               </Pressable>
             ))
           )}
@@ -80,19 +89,19 @@ export default function SearchScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.results}
           renderItem={({ item }) => (
-            <Pressable style={styles.resultItem}>
+            <Pressable style={[styles.resultItem, { borderBottomColor: colors.border }]}>
               <Text style={styles.resultIcon}>📈</Text>
               <View>
-                <Text style={styles.resultTitle}>{item.hashtag}</Text>
-                <Text style={styles.resultMeta}>{item.postsCount.toLocaleString()} posts</Text>
+                <Text style={[styles.resultTitle, { color: colors.textPrimary }]}>{item.hashtag}</Text>
+                <Text style={[styles.resultMeta, { color: colors.textSecondary }]}>{item.postsCount.toLocaleString()} posts</Text>
               </View>
             </Pressable>
           )}
           ListEmptyComponent={
             <View style={styles.emptyResults}>
               <Text style={styles.emptyIcon}>🔍</Text>
-              <Text style={styles.emptyTitle}>No results found</Text>
-              <Text style={styles.emptySubtitle}>
+              <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No results found</Text>
+              <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
                 Try different keywords or check the spelling
               </Text>
             </View>
@@ -106,7 +115,7 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: defaultColors.background,
   },
   header: {
     paddingHorizontal: spacing.lg,
@@ -114,21 +123,21 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 16,
-    color: colors.primary,
+    color: defaultColors.primary,
     fontWeight: '500',
   },
   searchContainer: {
     padding: spacing.lg,
   },
   searchInput: {
-    backgroundColor: colors.surface,
+    backgroundColor: defaultColors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: defaultColors.border,
     borderRadius: borderRadius['3xl'],
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
     fontSize: 15,
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
   },
   recentSection: {
     paddingHorizontal: spacing.lg,
@@ -136,7 +145,7 @@ const styles = StyleSheet.create({
   recentTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
     marginBottom: spacing.lg,
   },
   topicItem: {
@@ -145,16 +154,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
+    borderBottomColor: defaultColors.divider,
   },
   topicHashtag: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
   },
   topicCount: {
     fontSize: 13,
-    color: colors.textSecondary,
+    color: defaultColors.textSecondary,
   },
   results: {
     paddingHorizontal: spacing.lg,
@@ -164,7 +173,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
+    borderBottomColor: defaultColors.divider,
     gap: spacing.md,
   },
   resultIcon: {
@@ -173,11 +182,11 @@ const styles = StyleSheet.create({
   resultTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
   },
   resultMeta: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: defaultColors.textSecondary,
     marginTop: 2,
   },
   emptyResults: {
@@ -191,12 +200,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
     marginBottom: spacing.sm,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: defaultColors.textSecondary,
     textAlign: 'center',
   },
 });

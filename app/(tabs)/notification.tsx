@@ -7,28 +7,49 @@ import {
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, spacing, borderRadius } from '../../theme';
+import { colors as defaultColors, spacing, borderRadius, useTheme } from '../../theme';
 import { Notification } from '../../types';
 import { notificationService } from '../../services';
 import { useCacheStore } from '../../store';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
 
-function NotificationItem({ item }: { item: Notification }) {
+const NotificationItem = React.memo(({ item, colors, isDark }: { item: Notification; colors: any; isDark: boolean }) => {
   return (
-    <Pressable style={[styles.notifItem, !item.isRead && styles.notifItemUnread]}>
-      {!item.isRead && <View style={styles.unreadDot} />}
+    <Pressable
+      style={[
+        styles.notifItem,
+        {
+          backgroundColor: item.isRead
+            ? colors.surface
+            : isDark
+            ? colors.primaryLight
+            : '#F0EEFF',
+          borderColor: colors.border,
+          borderWidth: isDark ? 1 : 0,
+        },
+      ]}
+    >
+      {!item.isRead && <View style={[styles.unreadDot, { backgroundColor: colors.unreadDot }]} />}
       <View style={styles.notifContent}>
-        <Text style={[styles.notifTitle, !item.isRead && styles.notifTitleUnread]} numberOfLines={2}>
+        <Text
+          style={[
+            styles.notifTitle,
+            { color: colors.textPrimary },
+            !item.isRead && styles.notifTitleUnread,
+          ]}
+          numberOfLines={2}
+        >
           {item.title}
         </Text>
-        <Text style={styles.notifTime}>{item.timeAgo}</Text>
+        <Text style={[styles.notifTime, { color: colors.textSecondary }]}>{item.timeAgo}</Text>
       </View>
     </Pressable>
   );
-}
+});
 
 export default function NotificationScreen() {
+  const { colors, isDark } = useTheme();
   const cachedNotifications = useCacheStore((s) => s.notifications);
   const setCachedNotifications = useCacheStore((s) => s.setNotifications);
 
@@ -53,16 +74,27 @@ export default function NotificationScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Notification</Text>
+        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Notification</Text>
       </View>
 
       {loading ? (
         <View style={styles.listContent}>
           {Array.from({ length: 5 }).map((_, i) => (
-            <View key={i} style={[styles.notifItem, { marginBottom: spacing.sm }]}>
-              <View style={styles.unreadDot} />
+            <View
+              key={i}
+              style={[
+                styles.notifItem,
+                {
+                  marginBottom: spacing.sm,
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  borderWidth: isDark ? 1 : 0,
+                },
+              ]}
+            >
+              <View style={[styles.unreadDot, { backgroundColor: colors.unreadDot }]} />
               <View style={styles.notifContent}>
                 <Skeleton width="90%" height={14} style={{ marginBottom: spacing.xs }} />
                 <Skeleton width="40%" height={12} />
@@ -74,7 +106,7 @@ export default function NotificationScreen() {
         <FlashList
           data={notifications}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <NotificationItem item={item} />}
+          renderItem={({ item }) => <NotificationItem item={item} colors={colors} isDark={isDark} />}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           ItemSeparatorComponent={() => <View style={{ height: spacing.xs }} />}
@@ -94,7 +126,7 @@ export default function NotificationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: defaultColors.background,
   },
   header: {
     paddingHorizontal: spacing.lg,
@@ -103,7 +135,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 26,
     fontWeight: '800',
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
   },
   listContent: {
     paddingHorizontal: spacing.lg,
@@ -113,7 +145,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing.md,
-    backgroundColor: colors.surface,
+    backgroundColor: defaultColors.surface,
     borderRadius: borderRadius.md,
     gap: spacing.md,
   },
@@ -124,7 +156,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.unreadDot,
+    backgroundColor: defaultColors.unreadDot,
     marginTop: 6,
     flexShrink: 0,
   },
@@ -133,7 +165,7 @@ const styles = StyleSheet.create({
   },
   notifTitle: {
     fontSize: 14,
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
     lineHeight: 20,
     marginBottom: spacing.xs,
   },
@@ -142,7 +174,7 @@ const styles = StyleSheet.create({
   },
   notifTime: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: defaultColors.textSecondary,
   },
   separator: {
     height: spacing.sm,

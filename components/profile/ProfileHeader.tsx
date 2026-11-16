@@ -6,7 +6,7 @@ import {
   Pressable,
   StyleSheet,
 } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 import { borderRadius } from '../../theme/borderRadius';
@@ -23,12 +23,14 @@ interface ProfileHeaderProps {
 interface StatItemProps {
   count: number;
   label: string;
+  countColor: string;
+  labelColor: string;
 }
 
-const StatItem: React.FC<StatItemProps> = ({ count, label }) => (
+const StatItem: React.FC<StatItemProps> = ({ count, label, countColor, labelColor }) => (
   <View style={styles.statItem}>
-    <Text style={styles.statCount}>{count.toLocaleString()}</Text>
-    <Text style={styles.statLabel}>{label}</Text>
+    <Text style={[styles.statCount, { color: countColor }]}>{count.toLocaleString()}</Text>
+    <Text style={[styles.statLabel, { color: labelColor }]}>{label}</Text>
   </View>
 );
 
@@ -37,8 +39,10 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   onEditProfile,
   onFollow,
 }) => {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surface }]}>
       {/* Cover Photo */}
       <View style={styles.coverWrapper}>
         {profile.coverPhoto ? (
@@ -48,13 +52,19 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             resizeMode="cover"
           />
         ) : (
-          <View style={[styles.coverImage, styles.coverPlaceholder]} />
+          <View
+            style={[
+              styles.coverImage,
+              styles.coverPlaceholder,
+              { backgroundColor: colors.primaryLight },
+            ]}
+          />
         )}
       </View>
 
       {/* Avatar (overlapping) */}
       <View style={styles.avatarWrapper}>
-        <View style={styles.avatarBorder}>
+        <View style={[styles.avatarBorder, { backgroundColor: colors.surface }]}>
           <Avatar
             uri={profile.avatar}
             size="lg"
@@ -65,28 +75,60 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       {/* Name + Username */}
       <View style={styles.nameSection}>
         <View style={styles.nameRow}>
-          <Text style={styles.fullName}>{profile.fullName}</Text>
+          <Text style={[styles.fullName, { color: colors.textPrimary }]}>
+            {profile.fullName}
+          </Text>
           {profile.isVerified && <VerifiedBadge />}
         </View>
-        <Text style={styles.username}>@{profile.username}</Text>
+        <Text style={[styles.username, { color: colors.textSecondary }]}>
+          @{profile.username}
+        </Text>
       </View>
 
       {/* Faculty + University */}
-      <Text style={styles.affiliationText}>
+      <Text style={[styles.affiliationText, { color: colors.textSecondary }]}>
         {profile.faculty} · {profile.university.name}
       </Text>
 
       {/* Bio */}
       {profile.bio ? (
-        <Text style={styles.bio}>{profile.bio}</Text>
+        <Text style={[styles.bio, { color: colors.textPrimary }]}>{profile.bio}</Text>
       ) : null}
 
       {/* Stats Row */}
-      <View style={styles.statsRow}>
-        <StatItem count={profile.postsCount} label="Posts" />
-        <StatItem count={profile.followersCount} label="Followers" />
-        <StatItem count={profile.followingCount} label="Following" />
-        <StatItem count={profile.reputation} label="Rep" />
+      <View
+        style={[
+          styles.statsRow,
+          {
+            borderTopColor: colors.divider,
+            borderBottomColor: colors.divider,
+          },
+        ]}
+      >
+        <StatItem
+          count={profile.postsCount}
+          label="Posts"
+          countColor={colors.textPrimary}
+          labelColor={colors.textSecondary}
+        />
+        <StatItem
+          count={profile.followersCount}
+          label="Followers"
+          countColor={colors.textPrimary}
+          labelColor={colors.textSecondary}
+        />
+        <StatItem
+          count={profile.followingCount}
+          label="Following"
+          countColor={colors.textPrimary}
+          labelColor={colors.textSecondary}
+        />
+        <StatItem
+          count={profile.reputation}
+          label="Rep"
+          countColor={colors.textPrimary}
+          labelColor={colors.textSecondary}
+        />
       </View>
 
       {/* Action Button */}
@@ -95,24 +137,29 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           onPress={onEditProfile}
           style={({ pressed }) => [
             styles.editButton,
+            { borderColor: colors.primary },
             pressed && styles.pressed,
           ]}
         >
-          <Text style={styles.editButtonText}>Edit Profile</Text>
+          <Text style={[styles.editButtonText, { color: colors.primary }]}>
+            Edit Profile
+          </Text>
         </Pressable>
       ) : (
         <Pressable
           onPress={() => onFollow?.(profile.id)}
           style={({ pressed }) => [
-            profile.isFollowing ? styles.followingButton : styles.followButton,
+            profile.isFollowing
+              ? [styles.followingButton, { borderColor: colors.primary }]
+              : [styles.followButton, { backgroundColor: colors.primary }],
             pressed && styles.pressed,
           ]}
         >
           <Text
             style={
               profile.isFollowing
-                ? styles.followingButtonText
-                : styles.followButtonText
+                ? [styles.followingButtonText, { color: colors.primary }]
+                : [styles.followButtonText, { color: colors.textInverse }]
             }
           >
             {profile.isFollowing ? 'Following' : 'Follow'}
@@ -125,7 +172,6 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
     paddingBottom: spacing['2xl'],
   },
   coverWrapper: {
@@ -135,9 +181,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  coverPlaceholder: {
-    backgroundColor: colors.primaryLight,
-  },
+  coverPlaceholder: {},
   avatarWrapper: {
     alignItems: 'center',
     marginTop: -36,
@@ -145,7 +189,6 @@ const styles = StyleSheet.create({
   avatarBorder: {
     padding: 3,
     borderRadius: borderRadius.full,
-    backgroundColor: colors.surface,
   },
   nameSection: {
     alignItems: 'center',
@@ -160,25 +203,21 @@ const styles = StyleSheet.create({
   fullName: {
     fontSize: typography.h3.fontSize,
     fontWeight: typography.h3.fontWeight,
-    color: colors.textPrimary,
   },
   username: {
     fontSize: typography.body.fontSize,
     fontWeight: typography.body.fontWeight,
-    color: colors.textSecondary,
     marginTop: spacing.xxs,
   },
   affiliationText: {
     fontSize: typography.caption.fontSize,
     fontWeight: typography.caption.fontWeight,
-    color: colors.textSecondary,
     textAlign: 'center',
     marginTop: spacing.sm,
   },
   bio: {
     fontSize: typography.body.fontSize,
     fontWeight: typography.body.fontWeight,
-    color: colors.textPrimary,
     lineHeight: typography.body.lineHeight,
     textAlign: 'center',
     marginTop: spacing.md,
@@ -191,9 +230,7 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
     borderTopWidth: 1,
-    borderTopColor: colors.divider,
     borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
   },
   statItem: {
     alignItems: 'center',
@@ -201,17 +238,14 @@ const styles = StyleSheet.create({
   statCount: {
     fontSize: typography.h4.fontSize,
     fontWeight: typography.h4.fontWeight,
-    color: colors.textPrimary,
   },
   statLabel: {
     fontSize: typography.caption.fontSize,
     fontWeight: typography.caption.fontWeight,
-    color: colors.textSecondary,
     marginTop: spacing.xxs,
   },
   editButton: {
     borderWidth: 1.5,
-    borderColor: colors.primary,
     borderRadius: borderRadius['3xl'],
     paddingVertical: spacing.md,
     marginHorizontal: spacing['2xl'],
@@ -221,10 +255,8 @@ const styles = StyleSheet.create({
   editButtonText: {
     fontSize: typography.button.fontSize,
     fontWeight: typography.button.fontWeight,
-    color: colors.primary,
   },
   followButton: {
-    backgroundColor: colors.primary,
     borderRadius: borderRadius['3xl'],
     paddingVertical: spacing.md,
     marginHorizontal: spacing['2xl'],
@@ -234,11 +266,9 @@ const styles = StyleSheet.create({
   followButtonText: {
     fontSize: typography.button.fontSize,
     fontWeight: typography.button.fontWeight,
-    color: colors.textInverse,
   },
   followingButton: {
     borderWidth: 1.5,
-    borderColor: colors.primary,
     borderRadius: borderRadius['3xl'],
     paddingVertical: spacing.md,
     marginHorizontal: spacing['2xl'],
@@ -248,7 +278,6 @@ const styles = StyleSheet.create({
   followingButtonText: {
     fontSize: typography.button.fontSize,
     fontWeight: typography.button.fontWeight,
-    color: colors.primary,
   },
   pressed: {
     opacity: 0.85,

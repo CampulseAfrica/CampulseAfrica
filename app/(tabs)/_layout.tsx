@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { Tabs } from 'expo-router';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors } from '../../theme';
+import { useTheme } from '../../theme';
 import { HomeIcon, DiscoverIcon, NotificationIcon, CreateIcon } from '../../components/ui/TabIcons';
 import { User } from 'lucide-react-native';
 
@@ -9,32 +9,52 @@ interface TabIconProps {
   icon: ReactNode;
   label: string;
   focused: boolean;
+  activeColor: string;
+  inactiveColor: string;
 }
 
-function TabIcon({ icon, label, focused }: TabIconProps) {
+function TabIcon({ icon, label, focused, activeColor, inactiveColor }: TabIconProps) {
   return (
     <View style={styles.tabIconContainer}>
       {icon}
-      <Text numberOfLines={1} style={[styles.tabLabel, focused && styles.tabLabelActive]}>{label}</Text>
+      <Text
+        numberOfLines={1}
+        style={[
+          styles.tabLabel,
+          { color: focused ? activeColor : inactiveColor },
+          focused && styles.tabLabelActive,
+        ]}
+      >
+        {label}
+      </Text>
     </View>
   );
 }
 
 export default function TabsLayout() {
+  const { colors: themeColors, isDark } = useTheme();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [
+          styles.tabBar,
+          {
+            backgroundColor: themeColors.tabBarBackground,
+            borderTopWidth: 1,
+            borderTopColor: isDark ? themeColors.border : '#E5E7EB',
+          },
+        ],
         tabBarShowLabel: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.tabBarInactive,
+        tabBarActiveTintColor: themeColors.primary,
+        tabBarInactiveTintColor: themeColors.tabBarInactive,
         tabBarButton: (props) => (
           <Pressable
             {...(props as any)}
             style={({ pressed }) => [
               props.style,
-              pressed && { opacity: 0.7 }, // Clean iOS-style fade instead of a black shadow
+              pressed && { opacity: 0.75 },
             ]}
           />
         ),
@@ -45,9 +65,11 @@ export default function TabsLayout() {
         options={{
           tabBarIcon: ({ focused, color }) => (
             <TabIcon
-              icon={<HomeIcon color={color as string} size={focused ? 26 : 22} />}
+              icon={<HomeIcon color={color as string} size={22} />}
               label="Home"
               focused={focused}
+              activeColor={themeColors.primary}
+              inactiveColor={themeColors.tabBarInactive}
             />
           ),
         }}
@@ -57,9 +79,11 @@ export default function TabsLayout() {
         options={{
           tabBarIcon: ({ focused, color }) => (
             <TabIcon
-              icon={<DiscoverIcon color={color as string} size={focused ? 26 : 22} />}
+              icon={<DiscoverIcon color={color as string} size={22} />}
               label="Discover"
               focused={focused}
+              activeColor={themeColors.primary}
+              inactiveColor={themeColors.tabBarInactive}
             />
           ),
         }}
@@ -69,7 +93,7 @@ export default function TabsLayout() {
         options={{
           tabBarIcon: () => (
             <View style={styles.createButtonContainer}>
-              <CreateIcon size={72} />
+              <CreateIcon size={46} bgColor={themeColors.primary} />
             </View>
           ),
         }}
@@ -79,9 +103,11 @@ export default function TabsLayout() {
         options={{
           tabBarIcon: ({ focused, color }) => (
             <TabIcon
-              icon={<NotificationIcon color={color as string} size={focused ? 26 : 22} />}
-              label="Notification"
+              icon={<NotificationIcon color={color as string} size={22} />}
+              label="Alerts"
               focused={focused}
+              activeColor={themeColors.primary}
+              inactiveColor={themeColors.tabBarInactive}
             />
           ),
         }}
@@ -91,9 +117,11 @@ export default function TabsLayout() {
         options={{
           tabBarIcon: ({ focused, color }) => (
             <TabIcon
-              icon={<User color={color as string} size={focused ? 26 : 22} strokeWidth={focused ? 2.5 : 2} />}
+              icon={<User color={color as string} size={22} strokeWidth={focused ? 2.5 : 2} />}
               label="Profile"
               focused={focused}
+              activeColor={themeColors.primary}
+              inactiveColor={themeColors.tabBarInactive}
             />
           ),
         }}
@@ -105,18 +133,14 @@ export default function TabsLayout() {
 const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: '#FFFFFF',
-    borderTopWidth: 0,
-    elevation: 10,
+    elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    height: 72,
+    shadowOffset: { width: 0, height: -1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    height: 66,
     paddingTop: 8,
     paddingBottom: 8,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    position: 'absolute',
   },
   tabIconContainer: {
     alignItems: 'center',
@@ -125,18 +149,16 @@ const styles = StyleSheet.create({
     width: 60,
   },
   createButtonContainer: {
-    top: -29, // adjusted
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 4,
   },
   tabLabel: {
-    fontSize: 10,
+    fontSize: 10.5,
     fontWeight: '500',
-    color: colors.tabBarInactive,
     textAlign: 'center',
   },
   tabLabelActive: {
-    color: '#4B3EDC', // Extracted exactly from the Figma active state
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

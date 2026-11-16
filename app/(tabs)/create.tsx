@@ -11,13 +11,14 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { colors, spacing, borderRadius, typography } from '../../theme';
+import { colors as defaultColors, spacing, borderRadius, typography, useTheme } from '../../theme';
 import { useAuthStore } from '../../store';
 import { postService } from '../../services';
 import { Image as ImageIcon, Video, Link as LinkIcon, Smile, AlignLeft, MoreHorizontal } from 'lucide-react-native';
 
 export default function CreateScreen() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   const { currentUser, isAuthenticated, selectedUniversity } = useAuthStore();
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,11 +44,11 @@ export default function CreateScreen() {
 
   if (!isAuthenticated) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.guestContainer}>
-          <Text style={styles.guestTitle}>Sign in to post</Text>
+          <Text style={[styles.guestTitle, { color: colors.textPrimary }]}>Sign in to post</Text>
           <Pressable
-            style={styles.guestButton}
+            style={[styles.guestButton, { backgroundColor: colors.primary }]}
             onPress={() => router.push('/(auth)/login')}
           >
             <Text style={styles.guestButtonText}>Log In</Text>
@@ -58,20 +59,21 @@ export default function CreateScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { borderBottomColor: colors.border }]}>
           <Pressable onPress={() => router.back()} style={styles.headerButton}>
-            <Text style={styles.cancelText}>Cancel</Text>
+            <Text style={[styles.cancelText, { color: colors.textSecondary }]}>Cancel</Text>
           </Pressable>
-          <Text style={styles.headerTitle}>New Post</Text>
+          <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>New Post</Text>
           <Pressable 
             style={[
               styles.postButton, 
+              { backgroundColor: colors.primary },
               (!content.trim() || isSubmitting) && styles.postButtonDisabled
             ]}
             onPress={handlePost}
@@ -87,12 +89,12 @@ export default function CreateScreen() {
         <View style={styles.inputSection}>
           <Image 
             source={{ uri: currentUser?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100' }} 
-            style={styles.avatar} 
+            style={[styles.avatar, { backgroundColor: colors.surface }]} 
           />
           <TextInput
-            style={styles.textInput}
+            style={[styles.textInput, { color: colors.textPrimary }]}
             placeholder="What's happening on campus...?"
-            placeholderTextColor={colors.textSecondary}
+            placeholderTextColor={colors.textTertiary}
             multiline
             autoFocus
             value={content}
@@ -104,7 +106,7 @@ export default function CreateScreen() {
         <View style={{ flex: 1 }} />
 
         {/* Bottom Toolbar */}
-        <View style={styles.toolbar}>
+        <View style={[styles.toolbar, { borderTopColor: colors.border, backgroundColor: colors.background }]}>
           <View style={styles.toolbarIcons}>
             <Pressable style={styles.iconButton}>
               <ImageIcon color={colors.primary} size={22} />
@@ -150,16 +152,16 @@ const styles = StyleSheet.create({
   },
   cancelText: {
     fontSize: 16,
-    color: colors.textSecondary,
+    color: defaultColors.textSecondary,
     fontWeight: '500',
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
   },
   postButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: defaultColors.primary,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs + 2,
     borderRadius: borderRadius.full,
@@ -184,12 +186,12 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginRight: spacing.md,
-    backgroundColor: colors.surface,
+    backgroundColor: defaultColors.surface,
   },
   textInput: {
     flex: 1,
     fontSize: 18,
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
     minHeight: 150,
   },
   toolbar: {
@@ -220,7 +222,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   guestButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: defaultColors.primary,
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
     borderRadius: borderRadius.full,

@@ -7,7 +7,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { colors } from '../../theme/colors';
+import { colors as defaultColors, useTheme } from '../../theme';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 import { borderRadius } from '../../theme/borderRadius';
@@ -52,6 +52,7 @@ export const Button: React.FC<ButtonProps> = ({
   fullWidth = false,
   size = 'md',
 }) => {
+  const { colors } = useTheme();
   const config = sizeConfig[size];
 
   const containerStyle: ViewStyle[] = [
@@ -66,16 +67,16 @@ export const Button: React.FC<ButtonProps> = ({
 
   switch (variant) {
     case 'primary':
-      containerStyle.push(styles.primaryContainer);
-      textStyle.push(styles.primaryText);
+      containerStyle.push({ backgroundColor: colors.primary });
+      textStyle.push({ color: colors.textInverse });
       break;
     case 'secondary':
-      containerStyle.push(styles.secondaryContainer);
-      textStyle.push(styles.secondaryText);
+      containerStyle.push(styles.secondaryContainer, { borderColor: colors.primary });
+      textStyle.push({ color: colors.primary });
       break;
     case 'ghost':
       containerStyle.push(styles.ghostContainer);
-      textStyle.push(styles.ghostText);
+      textStyle.push({ color: colors.primary });
       break;
   }
 
@@ -116,24 +117,24 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   primaryContainer: {
-    backgroundColor: colors.primary,
+    backgroundColor: defaultColors.primary,
   },
   secondaryContainer: {
     backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: colors.primary,
+    borderColor: defaultColors.primary,
   },
   ghostContainer: {
     backgroundColor: 'transparent',
   },
   primaryText: {
-    color: colors.textInverse,
+    color: defaultColors.textInverse,
   },
   secondaryText: {
-    color: colors.primary,
+    color: defaultColors.primary,
   },
   ghostText: {
-    color: colors.primary,
+    color: defaultColors.primary,
   },
   disabled: {
     opacity: 0.5,

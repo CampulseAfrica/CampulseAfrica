@@ -1,7 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import React, { memo } from 'react';
+import { View, StyleSheet, ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
-import { colors } from '../../theme/colors';
 import { borderRadius } from '../../theme/borderRadius';
 
 type AvatarSize = 'sm' | 'md' | 'lg';
@@ -17,7 +16,7 @@ const sizeMap: Record<AvatarSize, { container: number }> = {
   lg: { container: 64 },
 };
 
-export const Avatar: React.FC<AvatarProps> = ({
+export const Avatar: React.FC<AvatarProps> = memo(({
   uri,
   size = 'md',
 }) => {
@@ -44,13 +43,13 @@ export const Avatar: React.FC<AvatarProps> = ({
       />
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   wrapper: {
     position: 'relative',
   },
   image: {
-    backgroundColor: colors.surface,
+    backgroundColor: '#88888820',
   },
 });

@@ -13,7 +13,7 @@ import {
 import { FlatList as RNGHFlatList, ScrollView as RNGHScrollView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Reanimated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
-import { colors, spacing, borderRadius } from '../../theme';
+import { colors, spacing, borderRadius, useTheme } from '../../theme';
 import { DiscoverTab, TrendingTopic, NewsItem, Job, AcademicMaterial, CampusEvent, FeaturedNews } from '../../types';
 import { discoverService } from '../../services';
 import { Skeleton } from '../../components/ui/Skeleton';
@@ -34,6 +34,7 @@ const DISCOVER_TABS: { key: DiscoverTab; label: string }[] = [
 ];
 
 function TrendingTab() {
+  const { colors, isDark } = useTheme();
   const [loading, setLoading] = useState(true);
   const [featured, setFeatured] = useState<FeaturedNews | null>(null);
   const [trending, setTrending] = useState<TrendingTopic[]>([]);
@@ -53,10 +54,10 @@ function TrendingTab() {
   if (loading || !featured) {
     return (
       <View style={styles.tabContent}>
-        <Text style={styles.sectionTitle}>Featured News</Text>
+        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Featured News</Text>
         <Skeleton height={280} borderRadius={borderRadius.lg} style={{ marginBottom: spacing.xl }} />
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Latest Update</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Latest Update</Text>
         </View>
         {Array.from({ length: 4 }).map((_, i) => (
           <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.lg }}>
@@ -74,16 +75,16 @@ function TrendingTab() {
   return (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
       {/* Featured News Card */}
-      <Text style={styles.sectionTitle}>Featured News</Text>
-      <View style={styles.featuredCard}>
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Featured News</Text>
+      <View style={[styles.featuredCard, { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: isDark ? 1 : 0 }]}>
         <Image source={{ uri: featured.image }} style={styles.featuredImage} />
         <View style={styles.featuredContent}>
-          <Text style={styles.featuredTitle}>{featured.title}</Text>
-          <Text style={styles.featuredDesc} numberOfLines={3}>
+          <Text style={[styles.featuredTitle, { color: colors.textPrimary }]}>{featured.title}</Text>
+          <Text style={[styles.featuredDesc, { color: colors.textSecondary }]} numberOfLines={3}>
             {featured.description}
           </Text>
           <View style={styles.featuredMeta}>
-            <Text style={styles.featuredTime}>{featured.timeAgo}. {featured.category}</Text>
+            <Text style={[styles.featuredTime, { color: colors.textSecondary }]}>{featured.timeAgo}. {featured.category}</Text>
             <View style={{ flex: 1 }} />
             <Bookmark size={16} color={colors.textPrimary} />
           </View>
@@ -92,7 +93,7 @@ function TrendingTab() {
 
       {/* Trending Topics */}
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Lastest Update</Text>
+        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Lastest Update</Text>
         <Text style={styles.seeMore}>See more</Text>
       </View>
       
@@ -101,11 +102,11 @@ function TrendingTab() {
           <EmptyState icon="🔥" title="No trending topics" subtitle="Check back later" />
         ) : (
           trending.map((topic) => (
-            <View key={topic.id} style={styles.trendingItem}>
-              <Text style={styles.trendingRank}>{topic.rank}</Text>
+            <View key={topic.id} style={[styles.trendingItem, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.trendingRank, { color: colors.textTertiary }]}>{topic.rank}</Text>
               <View style={styles.trendingInfo}>
-                <Text style={styles.trendingHashtag}>{topic.hashtag}</Text>
-                <Text style={styles.trendingCount}>{topic.postsCount.toLocaleString()} posts</Text>
+                <Text style={[styles.trendingHashtag, { color: colors.textPrimary }]}>{topic.hashtag}</Text>
+                <Text style={[styles.trendingCount, { color: colors.textSecondary }]}>{topic.postsCount.toLocaleString()} posts</Text>
               </View>
               {topic.isHot && (
                 <TrendIcon />
@@ -122,6 +123,7 @@ function TrendingTab() {
 }
 
 function NewsTab() {
+  const { colors } = useTheme();
   const [loading, setLoading] = useState(true);
   const [news, setNews] = useState<NewsItem[]>([]);
 
@@ -155,12 +157,12 @@ function NewsTab() {
         <EmptyState icon="📰" title="No news updates" subtitle="Check back later for campus news" />
       ) : (
         news.map((item) => (
-          <View key={item.id} style={styles.newsItem}>
+          <View key={item.id} style={[styles.newsItem, { borderBottomColor: colors.border }]}>
             <View style={styles.newsDate}>
-              <Text style={styles.newsDateText}>{item.date}</Text>
+              <Text style={[styles.newsDateText, { color: colors.textSecondary }]}>{item.date}</Text>
             </View>
             <View style={styles.newsContent}>
-              <Text style={styles.newsTitle} numberOfLines={2}>
+              <Text style={[styles.newsTitle, { color: colors.textPrimary }]} numberOfLines={2}>
                 {item.title}
               </Text>
             </View>
@@ -178,6 +180,7 @@ function NewsTab() {
 }
 
 function JobsTab() {
+  const { colors } = useTheme();
   const [loading, setLoading] = useState(true);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [abroad, setAbroad] = useState<Job[]>([]);
@@ -193,13 +196,13 @@ function JobsTab() {
   if (loading) {
     return (
       <View style={styles.tabContent}>
-        <Text style={styles.sectionTitle}>Opportunities</Text>
+        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Opportunities</Text>
         <RNGHScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
           {Array.from({ length: 2 }).map((_, i) => (
             <Skeleton key={i} width={width * 0.7} height={240} borderRadius={borderRadius.lg} style={{ marginRight: spacing.lg }} />
           ))}
         </RNGHScrollView>
-        <Text style={[styles.sectionTitle, { marginTop: spacing['2xl'] }]}>Study Abroad</Text>
+        <Text style={[styles.sectionTitle, { marginTop: spacing['2xl'], color: colors.textPrimary }]}>Study Abroad</Text>
         <RNGHScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
           {Array.from({ length: 2 }).map((_, i) => (
             <Skeleton key={i} width={width * 0.7} height={240} borderRadius={borderRadius.lg} style={{ marginRight: spacing.lg }} />
@@ -211,7 +214,7 @@ function JobsTab() {
 
   return (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
-      <Text style={styles.sectionTitle}>Opportunities</Text>
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Opportunities</Text>
       <RNGHScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
         {jobs.length === 0 ? (
           <View style={{ width: width - 48 }}>
@@ -280,6 +283,7 @@ function JobsTab() {
 }
 
 function AcademicTab() {
+  const { colors } = useTheme();
   const [loading, setLoading] = useState(true);
   const [materials, setMaterials] = useState<AcademicMaterial[]>([]);
 
@@ -294,7 +298,7 @@ function AcademicTab() {
   if (loading) {
     return (
       <View style={styles.tabContent}>
-        <Text style={styles.sectionTitle}>Study Materials</Text>
+        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Study Materials</Text>
         {Array.from({ length: 3 }).map((_, i) => (
           <Skeleton key={i} height={200} borderRadius={borderRadius.lg} style={{ marginBottom: spacing.lg }} />
         ))}
@@ -304,7 +308,7 @@ function AcademicTab() {
 
   return (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
-      <Text style={styles.sectionTitle}>Study Materials</Text>
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Study Materials</Text>
       {materials.length === 0 ? (
         <EmptyState icon="📚" title="No materials available" subtitle="Check back later" />
       ) : (
@@ -335,6 +339,7 @@ function AcademicTab() {
 }
 
 function EventsTab() {
+  const { colors, isDark } = useTheme();
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<CampusEvent[]>([]);
 
@@ -349,7 +354,7 @@ function EventsTab() {
   if (loading) {
     return (
       <View style={styles.tabContent}>
-        <Text style={styles.sectionTitle}>Upcoming Events</Text>
+        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Upcoming Events</Text>
         {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton key={i} height={100} borderRadius={borderRadius.lg} style={{ marginBottom: spacing.md }} />
         ))}
@@ -359,17 +364,17 @@ function EventsTab() {
 
   return (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
-      <Text style={styles.sectionTitle}>Upcoming Events</Text>
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Upcoming Events</Text>
       {events.length === 0 ? (
         <EmptyState icon="🎉" title="No upcoming events" subtitle="Check back later" />
       ) : (
         events.map((event) => (
-          <View key={event.id} style={styles.eventCard}>
+          <View key={event.id} style={[styles.eventCard, { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: isDark ? 1 : 0 }]}>
             <Image source={{ uri: event.image }} style={styles.eventImage} />
             <View style={styles.eventInfo}>
-              <Text style={styles.eventTitle} numberOfLines={1}>{event.title}</Text>
-              <Text style={styles.eventDate}>{event.date} · {event.time}</Text>
-              <Text style={styles.eventLocation} numberOfLines={1}>{event.location}</Text>
+              <Text style={[styles.eventTitle, { color: colors.textPrimary }]} numberOfLines={1}>{event.title}</Text>
+              <Text style={[styles.eventDate, { color: colors.primary }]}>{event.date} · {event.time}</Text>
+              <Text style={[styles.eventLocation, { color: colors.textSecondary }]} numberOfLines={1}>{event.location}</Text>
             </View>
           </View>
         ))
@@ -380,6 +385,7 @@ function EventsTab() {
 }
 
 export default function DiscoverScreen() {
+  const { colors, isDark } = useTheme();
   const [activeTab, setActiveTab] = useState<DiscoverTab>('trending');
   const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
@@ -446,16 +452,16 @@ export default function DiscoverScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <CampulseLogo width={131} height={26} />
+        <CampulseLogo width={131} height={26} color={colors.primary} />
         <Pressable onPress={() => router.push('/search')}>
-          <SearchIcon />
+          <SearchIcon bgColor={isDark ? colors.surfaceElevated : '#EBEBEB'} iconColor={colors.primary} />
         </Pressable>
       </View>
 
       {/* Sub-tabs */}
-      <View style={styles.subTabsContainer}>
+      <View style={[styles.subTabsContainer, { backgroundColor: colors.background }]}>
         <ScrollView
           ref={scrollViewRef}
           horizontal
@@ -472,6 +478,7 @@ export default function DiscoverScreen() {
               <Text
                 style={[
                   styles.subTabText,
+                  { color: activeTab === tab.key ? colors.primary : colors.textSecondary },
                   activeTab === tab.key && styles.subTabTextActive,
                 ]}
               >
@@ -482,11 +489,12 @@ export default function DiscoverScreen() {
           <Reanimated.View
             style={[
               styles.activeIndicator,
+              { backgroundColor: colors.primary },
               animatedIndicatorStyle,
             ]}
           />
         </ScrollView>
-        <View style={styles.subTabsBorder} />
+        <View style={[styles.subTabsBorder, { backgroundColor: colors.border }]} />
       </View>
 
       <RNGHFlatList

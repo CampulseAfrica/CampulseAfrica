@@ -1,12 +1,12 @@
 import React from 'react';
 import Svg, { Rect, Path } from 'react-native-svg';
 
-export const SearchIcon = ({ width = 40, height = 40 }: { width?: number; height?: number }) => (
+export const SearchIcon = ({ width = 40, height = 40, bgColor = '#EBEBEB', iconColor = '#AFA7FA' }: { width?: number; height?: number; bgColor?: string; iconColor?: string }) => (
   <Svg width={width} height={height} viewBox="0 0 40 40" fill="none">
-    <Rect width="40" height="40" rx="20" fill="#EBEBEB" />
+    <Rect width="40" height="40" rx="20" fill={bgColor} />
     <Path
       d="M29.054 26.5604L24.5192 22.0256C25.2262 20.8653 25.5991 19.5324 25.5968 18.1736C25.5968 14.0732 22.0436 10.5212 17.9432 10.5212C16.9683 10.5211 16.003 10.713 15.1023 11.086C14.2016 11.459 13.3832 12.0058 12.6939 12.6951C12.0045 13.3844 11.4578 14.2028 11.0848 15.1035C10.7118 16.0042 10.5199 16.9696 10.52 17.9444C10.52 22.0436 14.0732 25.5968 18.1724 25.5968C19.4864 25.598 20.7768 25.2484 21.9104 24.584L26.4692 29.1452C26.6836 29.3591 26.974 29.4791 27.2768 29.4791C27.5796 29.4791 27.87 29.3591 28.0844 29.1452L29.216 28.0136C29.6612 27.5684 29.4992 27.0056 29.054 26.5604ZM12.8048 17.9444C12.8047 17.2696 12.9375 16.6012 13.1956 15.9777C13.4538 15.3541 13.8322 14.7875 14.3094 14.3103C14.7866 13.833 15.3531 13.4544 15.9766 13.1961C16.6001 12.9378 17.2683 12.8048 17.9432 12.8048C20.7824 12.8048 23.312 15.3332 23.312 18.1736C23.3117 19.5366 22.7701 20.8437 21.8063 21.8075C20.8425 22.7713 19.5354 23.3129 18.1724 23.3132C15.3332 23.312 12.8048 20.7824 12.8048 17.9444Z"
-      fill="#AFA7FA"
+      fill={iconColor}
     />
   </Svg>
 );
@@ -49,9 +49,41 @@ export const TrendIcon = ({ width = 32, height = 32, color = '#4B3EDC' }: { widt
 </Svg>
 );
 
-export const VerifiedBadge = ({ width = 20, height = 18 }: { width?: number; height?: number }) => (
-  <Svg width={width} height={height} viewBox="0 0 20 18" fill="none">
-    <Path d="M7 0L6 3H2L3 7L0 9L3 11L2 15H6L7 18L10 16L13 18L14 15H18L17 11L20 9L17 7L18 3H14L13 0L10 2L7 0ZM14 5L15 6L8 13L5 10L6 9L8 11L14 5Z" fill="#8BC34A"/>
+export const VerifiedBadge = ({ width = 16, height = 16 }: { width?: number; height?: number }) => (
+  <Svg width={width} height={height} viewBox="0 0 16 16" fill="none">
+    <Path
+      d="M16 8C16 9.07 15.24 9.97 14.86 10.98C14.47 12 14.54 13.2 13.78 13.96C13.02 14.72 11.82 14.65 10.8 15.04C9.79 15.42 8.89 16.18 7.82 16.18C6.75 16.18 5.85 15.42 4.84 15.04C3.82 14.65 2.62 14.72 1.86 13.96C1.1 13.2 1.17 12 0.78 10.98C0.4 9.97 -0.36 9.07 0.02 8C-0.36 6.93 0.4 6.03 0.78 5.02C1.17 4 1.1 2.8 1.86 2.04C2.62 1.28 3.82 1.35 4.84 0.96C5.85 0.58 6.75 -0.18 7.82 0.02C8.89 -0.18 9.79 0.58 10.8 0.96C11.82 1.35 13.02 1.28 13.78 2.04C14.54 2.8 14.47 4 14.86 5.02C15.24 6.03 16 6.93 16 8Z"
+      fill="#1A71FD"
+    />
+    <Path
+      d="M6.8 11.2L3.6 8L4.73 6.87L6.8 8.93L11.27 4.47L12.4 5.6L6.8 11.2Z"
+      fill="#FFFFFF"
+    />
+  </Svg>
+);
+
+export const BookmarkIcon = ({ width = 16, height = 18, color = '#757575', filled = false }: { width?: number; height?: number; color?: string; filled?: boolean }) => (
+  <Svg width={width} height={height} viewBox="0 0 16 18" fill="none">
+    <Path
+      d="M1 2.2C1 1.53726 1.53726 1 2.2 1H13.8C14.4627 1 15 1.53726 15 2.2V16.2C15 16.8402 14.28 17.2188 13.75 16.8571L8 12.8947L2.25 16.8571C1.72 17.2188 1 16.8402 1 16.2V2.2Z"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill={filled ? color : 'none'}
+    />
+  </Svg>
+);
+
+export const MoreHorizontalIcon = ({ width = 20, height = 20, color = '#757575' }: { width?: number; height?: number; color?: string }) => (
+  <Svg width={width} height={height} viewBox="0 0 20 20" fill="none">
+    <Path
+      d="M4.5 10C4.5 10.5523 4.05228 11 3.5 11C2.94772 11 2.5 10.5523 2.5 10C2.5 9.44772 2.94772 9 3.5 9C4.05228 9 4.5 9.44772 4.5 10ZM11 10C11 10.5523 10.5523 11 10 11C9.44772 11 9 10.5523 9 10C9 9.44772 9.44772 9 10 9C10.5523 9 11 9.44772 11 10ZM17.5 10C17.5 10.5523 17.0523 11 16.5 11C15.9477 11 15.5 10.5523 15.5 10C15.5 9.44772 15.9477 9 16.5 9C17.0523 9 17.5 9.44772 17.5 10Z"
+      stroke={color}
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </Svg>
 );
 
@@ -82,5 +114,41 @@ export const EditIcon = ({ width = 12, height = 12, color = '#747474' }: { width
 export const UniversityIcon = ({ width = 14, height = 14, color = '#ADB1BB' }: { width?: number; height?: number; color?: string }) => (
   <Svg width={width} height={height} viewBox="0 0 14 14" fill="none">
     <Path d="M7 3.66667C7 2.95942 6.74714 2.28115 6.29706 1.78105C5.84697 1.28095 5.23652 1 4.6 1H1V11H5.2C5.67739 11 6.13523 11.2107 6.47279 11.5858C6.81036 11.9609 7 12.4696 7 13M7 3.66667V13M7 3.66667C7 2.95942 7.25286 2.28115 7.70294 1.78105C8.15303 1.28095 8.76348 1 9.4 1H13V11H8.8C8.32261 11 7.86477 11.2107 7.52721 11.5858C7.18964 11.9609 7 12.4696 7 13" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </Svg>
+);
+
+export const ArrowUpIcon = ({ width = 14, height = 14, color = '#6B7280' }: { width?: number; height?: number; color?: string }) => (
+  <Svg width={width} height={height} viewBox="0 0 14 14" fill="none">
+    <Path d="M7 11.5V2.5M7 2.5L3 6.5M7 2.5L11 6.5" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </Svg>
+);
+
+export const ArrowDownIcon = ({ width = 14, height = 14, color = '#6B7280' }: { width?: number; height?: number; color?: string }) => (
+  <Svg width={width} height={height} viewBox="0 0 14 14" fill="none">
+    <Path d="M7 2.5V11.5M7 11.5L3 7.5M7 11.5L11 7.5" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </Svg>
+);
+
+export const ReplyCurveIcon = ({ width = 14, height = 14, color = '#6B7280' }: { width?: number; height?: number; color?: string }) => (
+  <Svg width={width} height={height} viewBox="0 0 14 14" fill="none">
+    <Path d="M5 2.5L1.5 6M1.5 6L5 9.5M1.5 6H8.5C10.7091 6 12.5 7.79086 12.5 10V11.5" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  </Svg>
+);
+
+export const CornerDownRightIcon = ({ width = 14, height = 14, color = '#1A71FD' }: { width?: number; height?: number; color?: string }) => (
+  <Svg width={width} height={height} viewBox="0 0 14 14" fill="none">
+    <Path d="M2.5 2V8.5C2.5 9.05228 2.94772 9.5 3.5 9.5H11.5M11.5 9.5L8 6M11.5 9.5L8 13" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  </Svg>
+);
+
+export const SendAirplaneIcon = ({ width = 18, height = 18, color = '#FFFFFF' }: { width?: number; height?: number; color?: string }) => (
+  <Svg width={width} height={height} viewBox="0 0 24 24" fill="none">
+    <Path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9L22 2Z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </Svg>
+);
+
+export const CloseSmallIcon = ({ width = 16, height = 16, color = '#9CA3AF' }: { width?: number; height?: number; color?: string }) => (
+  <Svg width={width} height={height} viewBox="0 0 16 16" fill="none">
+    <Path d="M12 4L4 12M4 4L12 12" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );

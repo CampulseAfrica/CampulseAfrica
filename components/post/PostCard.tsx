@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useState } from 'react';
 import {
   View,
   Text,
@@ -6,32 +6,35 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { colors } from '../../theme/colors';
-import { spacing } from '../../theme/spacing';
-import { typography } from '../../theme/typography';
-import { borderRadius } from '../../theme/borderRadius';
+import { useTheme } from '../../theme';
 import type { Post, VoteType } from '../../types';
 import { Avatar } from '../ui/Avatar';
-import { VoteButtons } from './VoteButtons';
-import { VerifiedBadge, TrueIcon, MisleadingIcon, FalseIcon, CommentsIcon, ShareIcon } from '../ui/Icons';
+import {
+  VerifiedBadge,
+  CommentsIcon,
+  ShareIcon,
+  BookmarkIcon,
+  MoreHorizontalIcon,
+} from '../ui/Icons';
+import { CommunityCheck } from './CommunityCheck';
 import { useAuthStore } from '../../store';
 
 const formatTimeAgo = (dateString: string) => {
   const date = new Date(dateString);
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  
-  if (seconds < 60) return `Just now`;
+
+  if (seconds < 60) return `just now`;
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(seconds / 60);
+  if (hours < 24) return `${hours}h`;
   const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
+  if (days < 30) return `${days}d`;
   const months = Math.floor(days / 30);
-  if (months < 12) return `${months}mo ago`;
+  if (months < 12) return `${months}mo`;
   const years = Math.floor(months / 12);
-  return `${years}y ago`;
+  return `${years}y`;
 };
 
 interface PostCardProps {
@@ -39,14 +42,16 @@ interface PostCardProps {
   onVote: (postId: string, voteType: VoteType) => void;
   onComment?: (postId: string) => void;
   onShare?: (postId: string) => void;
+  onBookmark?: (postId: string) => void;
   onFollow?: (userId: string) => void;
+  onOptions?: (postId: string) => void;
   onPress: (postId: string) => void;
   isGuest?: boolean;
 }
 
-const renderContent = (content: string, hashtags: string[]) => {
-  if (hashtags.length === 0) {
-    return <Text style={styles.postText}>{content}</Text>;
+const renderContent = (content: string, hashtags: string[], textColor: string, hashtagColor: string) => {
+  if (!hashtags || hashtags.length === 0) {
+    return <Text style={[styles.postText, { color: textColor }]}>{content}</Text>;
   }
 
   const parts: React.ReactNode[] = [];
@@ -59,13 +64,13 @@ const renderContent = (content: string, hashtags: string[]) => {
     if (idx !== -1) {
       if (idx > 0) {
         parts.push(
-          <Text key={`t-${keyIndex++}`} style={styles.postText}>
+          <Text key={`t-${keyIndex++}`} style={[styles.postText, { color: textColor }]}>
             {remaining.substring(0, idx)}
           </Text>,
         );
       }
       parts.push(
-        <Text key={`h-${keyIndex++}`} style={styles.hashtag}>
+        <Text key={`h-${keyIndex++}`} style={[styles.hashtag, { color: hashtagColor }]}>
           {hashTag}
         </Text>,
       );
@@ -75,209 +80,262 @@ const renderContent = (content: string, hashtags: string[]) => {
 
   if (remaining) {
     parts.push(
-      <Text key={`r-${keyIndex}`} style={styles.postText}>
+      <Text key={`r-${keyIndex}`} style={[styles.postText, { color: textColor }]}>
         {remaining}
       </Text>,
     );
   }
 
-  return <Text style={styles.postText}>{parts}</Text>;
+  return <Text style={[styles.postText, { color: textColor }]}>{parts}</Text>;
 };
 
-export const PostCard: React.FC<PostCardProps> = ({
+export const PostCard: React.FC<PostCardProps> = memo(({
   post,
   onVote,
   onComment,
   onShare,
+  onBookmark,
   onFollow,
+  onOptions,
   onPress,
   isGuest = false,
 }) => {
   const { currentUser } = useAuthStore();
+  const { colors, isDark } = useTheme();
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [bookmarked, setBookmarked] = useState(post.isBookmarked ?? false);
+
   const timeAgo = formatTimeAgo(post.createdAt);
   const isOwnPost = currentUser?.id === post.user.id;
+
+  const handleFollowPress = () => {
+    setIsFollowing((prev) => !prev);
+    onFollow?.(post.user.id);
+  };
+
+  const handleBookmarkPress = () => {
+    setBookmarked((prev) => !prev);
+    onBookmark?.(post.id);
+  };
 
   return (
     <Pressable
       onPress={() => onPress(post.id)}
       style={({ pressed }) => [
         styles.card,
+        {
+          backgroundColor: colors.surface,
+          borderColor: isDark ? colors.border : '#E5E7EB',
+        },
         pressed && styles.cardPressed,
       ]}
     >
-      {/* Header: Avatar + Name + Follow */}
+      {/* Header: Avatar + Info + (Follow) + Options */}
       <View style={styles.header}>
-        <Avatar
-          uri={post.user.avatar}
-          size="md"
-        />
+        <Avatar uri={post.user.avatar} size="md" />
+
         <View style={styles.headerInfo}>
           <View style={styles.nameRow}>
-            <Text style={styles.userName} numberOfLines={1}>
+            <Text style={[styles.userName, { color: colors.textPrimary }]} numberOfLines={1}>
               {post.user.fullName}
             </Text>
-            {post.user.isVerified && <VerifiedBadge />}
+            {post.user.isVerified && <VerifiedBadge width={16} height={16} />}
           </View>
-          <Text style={styles.meta} numberOfLines={1}>
-            {post.user.university.name}. {timeAgo}
+          <Text style={[styles.meta, { color: colors.textSecondary }]} numberOfLines={1}>
+            {post.user.university?.name || post.university} · {timeAgo}
           </Text>
         </View>
-        {!isOwnPost && (
+
+        <View style={styles.headerActions}>
+          {!isOwnPost && !isFollowing && (
+            <Pressable
+              onPress={handleFollowPress}
+              style={({ pressed }) => [
+                styles.followButton,
+                {
+                  backgroundColor: isDark ? colors.surfaceElevated : '#EBF3FF',
+                  borderColor: isDark ? colors.border : '#D0E3FF',
+                },
+                pressed && styles.pressed,
+              ]}
+            >
+              <Text style={[styles.followText, { color: colors.primary }]}>+ Follow</Text>
+            </Pressable>
+          )}
+
           <Pressable
-            onPress={() => onFollow?.(post.user.id)}
-            style={({ pressed }) => [
-              styles.followButton,
-              pressed && styles.pressed,
-            ]}
+            onPress={() => onOptions?.(post.id)}
+            hitSlop={8}
+            style={styles.optionsButton}
           >
-            <Text style={styles.followText}>Follow</Text>
+            <MoreHorizontalIcon width={20} height={20} color={colors.textSecondary} />
           </Pressable>
-        )}
+        </View>
       </View>
 
       {/* Content */}
       <View style={styles.content}>
-        {renderContent(post.content, post.hashtags)}
+        {renderContent(post.content, post.hashtags, colors.textPrimary, colors.primary)}
       </View>
 
-      {/* Optional Image */}
-      {post.images.length > 0 && (
+      {/* Optional Post Image */}
+      {post.images && post.images.length > 0 && (
         <Image
           source={{ uri: post.images[0] }}
-          style={styles.postImage}
+          style={[styles.postImage, { backgroundColor: colors.skeleton }]}
           contentFit="cover"
           cachePolicy="disk"
         />
       )}
 
-      {/* Vote Buttons */}
-      {!isOwnPost && (
-        <View style={styles.voteSection}>
-          <VoteButtons
-            userVote={post.userVote}
-            onVote={(voteType) => onVote(post.id, voteType)}
-          />
-        </View>
-      )}
+      {/* Community Check Voting Section */}
+      <CommunityCheck
+        trueCount={post.trueCount}
+        misleadingCount={post.misleadingCount}
+        falseCount={post.falseCount}
+        userVote={post.userVote}
+        onVote={(voteType) => onVote(post.id, voteType)}
+        isOwnPost={isOwnPost}
+      />
 
-      {/* Stats Row */}
-      <View style={styles.statsRow}>
-        <View style={styles.stat}>
-          <TrueIcon color="#757575" width={16} height={16} />
-          <Text style={styles.statText}>{post.trueCount}</Text>
-        </View>
-        <View style={styles.stat}>
-          <MisleadingIcon color="#757575" width={16} height={16} />
-          <Text style={styles.statText}>{post.misleadingCount}</Text>
-        </View>
-        <View style={styles.stat}>
-          <FalseIcon color="#757575" width={16} height={16} />
-          <Text style={styles.statText}>{post.falseCount}</Text>
-        </View>
-        <Pressable style={styles.stat} onPress={() => onComment?.(post.id)}>
-          <CommentsIcon color="#757575" width={16} height={16} />
-          <Text style={styles.statText}>{post.commentsCount}</Text>
+      {/* Action Footer Row */}
+      <View style={[styles.footerRow, { borderTopColor: colors.divider }]}>
+        {/* Comments Count */}
+        <Pressable
+          style={styles.footerAction}
+          onPress={() => onComment?.(post.id)}
+          hitSlop={8}
+        >
+          <CommentsIcon color={colors.textSecondary} width={18} height={18} />
+          <Text style={[styles.footerActionText, { color: colors.textSecondary }]}>
+            {post.commentsCount} comments
+          </Text>
         </Pressable>
-        <Pressable style={styles.stat} onPress={() => onShare?.(post.id)}>
-          <ShareIcon color="#757575" width={16} height={16} />
-          <Text style={styles.statText}>Share</Text>
+
+        {/* Share Action */}
+        <Pressable
+          style={styles.footerAction}
+          onPress={() => onShare?.(post.id)}
+          hitSlop={8}
+        >
+          <ShareIcon color={colors.textSecondary} width={16} height={16} />
+          <Text style={[styles.footerActionText, { color: colors.textSecondary }]}>
+            Share
+          </Text>
+        </Pressable>
+
+        {/* Save / Bookmark Action */}
+        <Pressable
+          style={styles.footerAction}
+          onPress={handleBookmarkPress}
+          hitSlop={8}
+        >
+          <BookmarkIcon
+            color={bookmarked ? colors.primary : colors.textSecondary}
+            width={16}
+            height={18}
+            filled={bookmarked}
+          />
         </Pressable>
       </View>
     </Pressable>
   );
-};
+});
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    marginHorizontal: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
   },
   cardPressed: {
-    opacity: 0.97,
+    opacity: 0.98,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.md,
+    marginBottom: 12,
   },
   headerInfo: {
     flex: 1,
-    marginLeft: spacing.md,
-    marginRight: spacing.sm,
+    marginLeft: 12,
+    marginRight: 8,
   },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginBottom: 2,
+    gap: 6,
   },
   userName: {
-    fontSize: typography.bodySemibold.fontSize,
-    fontWeight: typography.bodySemibold.fontWeight,
-    color: colors.textPrimary,
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: -0.2,
   },
   meta: {
-    fontSize: typography.caption.fontSize,
-    fontWeight: typography.caption.fontWeight,
-    color: colors.textSecondary,
-    marginTop: spacing.xxs,
+    fontSize: 13,
+    fontWeight: '400',
+    marginTop: 2,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   followButton: {
-    borderWidth: 1.5,
-    borderColor: colors.primary,
-    borderRadius: borderRadius['3xl'],
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.lg,
+    paddingVertical: 5,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    borderWidth: 1,
   },
   followText: {
-    fontSize: typography.captionSemibold.fontSize,
-    fontWeight: typography.captionSemibold.fontWeight,
-    color: colors.primary,
+    fontSize: 13,
+    fontWeight: '700',
   },
-  pressed: {
-    opacity: 0.85,
+  optionsButton: {
+    padding: 4,
   },
   content: {
-    marginBottom: spacing.md,
+    marginBottom: 12,
   },
   postText: {
-    fontSize: typography.body.fontSize,
-    fontWeight: typography.body.fontWeight,
-    color: colors.textPrimary,
-    lineHeight: typography.body.lineHeight,
+    fontSize: 15,
+    lineHeight: 22,
+    letterSpacing: -0.1,
   },
   hashtag: {
-    color: colors.primary,
-    fontWeight: typography.bodySemibold.fontWeight,
+    fontWeight: '700',
+    fontSize: 15,
   },
   postImage: {
     width: '100%',
-    height: 200,
-    borderRadius: borderRadius.md,
-    marginBottom: spacing.md,
-    backgroundColor: colors.skeleton,
+    height: 220,
+    borderRadius: 12,
+    marginBottom: 8,
   },
-  voteSection: {
-    marginBottom: spacing.lg,
-  },
-  statsRow: {
+  footerRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: colors.divider,
-    paddingTop: spacing.md,
+    paddingTop: 12,
+    marginTop: 4,
   },
-  stat: {
+  footerAction: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
-  statText: {
-    fontSize: 12,
-    color: '#757575',
+  footerActionText: {
+    fontSize: 13,
     fontWeight: '500',
+  },
+  pressed: {
+    opacity: 0.7,
   },
 });

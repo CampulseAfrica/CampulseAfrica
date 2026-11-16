@@ -2,12 +2,11 @@ import React from 'react';
 import {
   View,
   Text,
-  Image,
   Pressable,
   StyleSheet,
   ImageBackground,
 } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 import { borderRadius } from '../../theme/borderRadius';
@@ -24,6 +23,8 @@ export const JobCard: React.FC<JobCardProps> = ({
   onApply,
   onBookmark,
 }) => {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.card}>
       <ImageBackground
@@ -37,8 +38,10 @@ export const JobCard: React.FC<JobCardProps> = ({
 
         {/* Category Tag */}
         <View style={styles.topRow}>
-          <View style={styles.categoryTag}>
-            <Text style={styles.categoryText}>{item.category}</Text>
+          <View style={[styles.categoryTag, { backgroundColor: colors.primary }]}>
+            <Text style={[styles.categoryText, { color: colors.textInverse }]}>
+              {item.category}
+            </Text>
           </View>
           <Pressable
             onPress={() => onBookmark(item)}
@@ -65,10 +68,13 @@ export const JobCard: React.FC<JobCardProps> = ({
             onPress={() => onApply(item)}
             style={({ pressed }) => [
               styles.applyButton,
+              { backgroundColor: colors.primary },
               pressed && styles.pressed,
             ]}
           >
-            <Text style={styles.applyText}>Apply For Job</Text>
+            <Text style={[styles.applyText, { color: colors.textInverse }]}>
+              Apply For Job
+            </Text>
           </Pressable>
         </View>
       </ImageBackground>
@@ -107,7 +113,6 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   categoryTag: {
-    backgroundColor: colors.primary,
     borderRadius: borderRadius['3xl'],
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
@@ -115,7 +120,6 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: typography.caption.fontSize,
     fontWeight: typography.captionSemibold.fontWeight,
-    color: colors.textInverse,
   },
   bookmarkBtn: {
     padding: spacing.xs,
@@ -132,7 +136,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.h4.fontSize,
     fontWeight: typography.h4.fontWeight,
-    color: colors.textInverse,
+    color: '#FFFFFF',
     marginBottom: spacing.xs,
   },
   description: {
@@ -143,7 +147,6 @@ const styles = StyleSheet.create({
     lineHeight: typography.caption.lineHeight,
   },
   applyButton: {
-    backgroundColor: colors.primary,
     borderRadius: borderRadius['3xl'],
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.xl,
@@ -152,6 +155,5 @@ const styles = StyleSheet.create({
   applyText: {
     fontSize: typography.captionSemibold.fontSize,
     fontWeight: typography.captionSemibold.fontWeight,
-    color: colors.textInverse,
   },
 });

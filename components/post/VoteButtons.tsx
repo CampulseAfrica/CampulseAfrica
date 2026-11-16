@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { colors } from '../../theme/colors';
+import { ThemeColors, lightColors } from '../../theme';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 import { borderRadius } from '../../theme/borderRadius';
@@ -10,6 +10,7 @@ import { TrueIcon, MisleadingIcon, FalseIcon } from '../ui/Icons';
 interface VoteButtonsProps {
   userVote: VoteType | null;
   onVote: (voteType: VoteType) => void;
+  colors?: ThemeColors;
 }
 
 interface VoteOption {
@@ -19,16 +20,17 @@ interface VoteOption {
   activeColor: string;
 }
 
-const voteOptions: VoteOption[] = [
-  { type: 'true', label: 'True', IconComponent: TrueIcon, activeColor: colors.voteTrue },
-  { type: 'misleading', label: 'Misleading', IconComponent: MisleadingIcon, activeColor: colors.voteMisleading },
-  { type: 'false', label: 'False', IconComponent: FalseIcon, activeColor: colors.voteFalse },
-];
-
-export const VoteButtons: React.FC<VoteButtonsProps> = ({
+export const VoteButtons: React.FC<VoteButtonsProps> = memo(({
   userVote,
   onVote,
+  colors = lightColors,
 }) => {
+  const voteOptions: VoteOption[] = [
+    { type: 'true', label: 'True', IconComponent: TrueIcon, activeColor: colors.voteTrue },
+    { type: 'misleading', label: 'Misleading', IconComponent: MisleadingIcon, activeColor: colors.voteMisleading },
+    { type: 'false', label: 'False', IconComponent: FalseIcon, activeColor: colors.voteFalse },
+  ];
+
   return (
     <View style={styles.container}>
       {voteOptions.map((option) => {
@@ -52,12 +54,12 @@ export const VoteButtons: React.FC<VoteButtonsProps> = ({
             <option.IconComponent
               width={16}
               height={16}
-              color={isActive ? colors.surface : colors.textSecondary}
+              color={isActive ? '#FFFFFF' : colors.textSecondary}
             />
             <Text
               style={[
                 styles.label,
-                { color: isActive ? colors.surface : colors.textPrimary }
+                { color: isActive ? '#FFFFFF' : colors.textPrimary }
               ]}
             >
               {option.label}
@@ -67,7 +69,7 @@ export const VoteButtons: React.FC<VoteButtonsProps> = ({
       })}
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -77,21 +79,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1.5,
-    borderRadius: borderRadius['3xl'],
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.full,
+    borderWidth: 1.5,
     gap: spacing.sm,
   },
-  icon: {
-    fontSize: 16,
-    fontWeight: '700',
+  pressed: {
+    opacity: 0.85,
   },
   label: {
     fontSize: typography.bodySemibold.fontSize,
     fontWeight: typography.bodySemibold.fontWeight,
-  },
-  pressed: {
-    opacity: 0.85,
   },
 });

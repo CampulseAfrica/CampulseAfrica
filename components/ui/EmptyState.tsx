@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '../../theme/colors';
+import { colors as defaultColors, useTheme } from '../../theme';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 
@@ -15,11 +15,13 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   title,
   subtitle,
 }) => {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.container}>
       <Text style={styles.icon}>{icon}</Text>
-      <Text style={styles.title}>{title}</Text>
-      {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+      <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
+      {subtitle ? <Text style={[styles.subtitle, { color: colors.textSecondary }]}>{subtitle}</Text> : null}
     </View>
   );
 };
@@ -39,14 +41,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.h3.fontSize,
     fontWeight: typography.h3.fontWeight,
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
     textAlign: 'center',
     marginBottom: spacing.sm,
   },
   subtitle: {
     fontSize: typography.body.fontSize,
     fontWeight: typography.body.fontWeight,
-    color: colors.textSecondary,
+    color: defaultColors.textSecondary,
     textAlign: 'center',
     lineHeight: typography.body.lineHeight,
   },

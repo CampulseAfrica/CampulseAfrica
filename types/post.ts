@@ -13,10 +13,16 @@ export interface Vote {
 export interface Comment {
   id: string;
   postId: string;
+  parentId?: string | null;
   user: User;
   content: string;
   createdAt: string;
-  likesCount: number;
+  upvotesCount: number;
+  downvotesCount: number;
+  userVote?: 'up' | 'down' | null;
+  replies?: Comment[];
+  totalRepliesCount?: number;
+  likesCount?: number;
 }
 
 export interface Post {

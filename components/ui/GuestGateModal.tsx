@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Modal, Pressable, StyleSheet } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 import { borderRadius } from '../../theme/borderRadius';
@@ -16,6 +16,8 @@ export const GuestGateModal: React.FC<GuestGateModalProps> = ({
   onSignUp,
   onDismiss,
 }) => {
+  const { colors } = useTheme();
+
   return (
     <Modal
       visible={visible}
@@ -24,13 +26,18 @@ export const GuestGateModal: React.FC<GuestGateModalProps> = ({
       onRequestClose={onDismiss}
     >
       <View style={styles.overlay}>
-        <Pressable style={styles.backdrop} onPress={onDismiss} />
-        <View style={styles.sheet}>
-          <View style={styles.handle} />
+        <Pressable
+          style={[styles.backdrop, { backgroundColor: colors.overlay }]}
+          onPress={onDismiss}
+        />
+        <View style={[styles.sheet, { backgroundColor: colors.surface }]}>
+          <View style={[styles.handle, { backgroundColor: colors.border }]} />
 
           <Text style={styles.emoji}>🔒</Text>
-          <Text style={styles.title}>Create an account to continue</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>
+            Create an account to continue
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
             Sign up to vote, comment, share, and interact with the Campulse community.
           </Text>
 
@@ -38,10 +45,11 @@ export const GuestGateModal: React.FC<GuestGateModalProps> = ({
             onPress={onSignUp}
             style={({ pressed }) => [
               styles.signUpButton,
+              { backgroundColor: colors.primary },
               pressed && styles.pressed,
             ]}
           >
-            <Text style={styles.signUpText}>Sign Up</Text>
+            <Text style={[styles.signUpText, { color: colors.textInverse }]}>Sign Up</Text>
           </Pressable>
 
           <Pressable
@@ -51,7 +59,9 @@ export const GuestGateModal: React.FC<GuestGateModalProps> = ({
               pressed && styles.pressed,
             ]}
           >
-            <Text style={styles.dismissText}>Maybe Later</Text>
+            <Text style={[styles.dismissText, { color: colors.textSecondary }]}>
+              Maybe Later
+            </Text>
           </Pressable>
         </View>
       </View>
@@ -66,10 +76,8 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: colors.overlay,
   },
   sheet: {
-    backgroundColor: colors.surface,
     borderTopLeftRadius: borderRadius.xl,
     borderTopRightRadius: borderRadius.xl,
     paddingHorizontal: spacing['2xl'],
@@ -81,7 +89,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: borderRadius.xs,
-    backgroundColor: colors.border,
     marginBottom: spacing['2xl'],
   },
   emoji: {
@@ -91,21 +98,18 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.h3.fontSize,
     fontWeight: typography.h3.fontWeight,
-    color: colors.textPrimary,
     textAlign: 'center',
     marginBottom: spacing.sm,
   },
   subtitle: {
     fontSize: typography.body.fontSize,
     fontWeight: typography.body.fontWeight,
-    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: typography.body.lineHeight,
     marginBottom: spacing['2xl'],
     paddingHorizontal: spacing.lg,
   },
   signUpButton: {
-    backgroundColor: colors.primary,
     borderRadius: borderRadius['3xl'],
     paddingVertical: spacing.md,
     alignSelf: 'stretch',
@@ -115,7 +119,6 @@ const styles = StyleSheet.create({
   signUpText: {
     fontSize: typography.button.fontSize,
     fontWeight: typography.button.fontWeight,
-    color: colors.textInverse,
   },
   dismissButton: {
     paddingVertical: spacing.md,
@@ -125,7 +128,6 @@ const styles = StyleSheet.create({
   dismissText: {
     fontSize: typography.button.fontSize,
     fontWeight: typography.button.fontWeight,
-    color: colors.textSecondary,
   },
   pressed: {
     opacity: 0.85,

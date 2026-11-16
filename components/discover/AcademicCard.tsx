@@ -7,7 +7,7 @@ import {
   StyleSheet,
   ImageBackground,
 } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 import { borderRadius } from '../../theme/borderRadius';
@@ -22,6 +22,8 @@ export const AcademicCard: React.FC<AcademicCardProps> = ({
   item,
   onPress,
 }) => {
+  const { colors, isDark } = useTheme();
+
   return (
     <Pressable
       onPress={() => onPress(item)}
@@ -39,7 +41,14 @@ export const AcademicCard: React.FC<AcademicCardProps> = ({
         <View style={styles.overlay} />
 
         <View style={styles.bottomContent}>
-          <Text style={styles.courseCode}>{item.courseCode}</Text>
+          <Text
+            style={[
+              styles.courseCode,
+              { color: isDark ? '#B4AFFF' : colors.primaryLight },
+            ]}
+          >
+            {item.courseCode}
+          </Text>
           <Text style={styles.title} numberOfLines={2}>
             {item.title}
           </Text>
@@ -47,7 +56,7 @@ export const AcademicCard: React.FC<AcademicCardProps> = ({
           <View style={styles.authorRow}>
             <Image
               source={{ uri: item.author.avatar }}
-              style={styles.authorAvatar}
+              style={[styles.authorAvatar, { backgroundColor: colors.border }]}
             />
             <Text style={styles.authorName} numberOfLines={1}>
               {item.author.name}
@@ -92,7 +101,6 @@ const styles = StyleSheet.create({
   courseCode: {
     fontSize: typography.caption.fontSize,
     fontWeight: typography.captionSemibold.fontWeight,
-    color: colors.primaryLight,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: spacing.xxs,
@@ -100,7 +108,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.h4.fontSize,
     fontWeight: typography.h4.fontWeight,
-    color: colors.textInverse,
+    color: '#FFFFFF',
     marginBottom: spacing.sm,
   },
   authorRow: {
@@ -112,7 +120,6 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: borderRadius.full,
-    backgroundColor: colors.border,
   },
   authorName: {
     fontSize: typography.caption.fontSize,

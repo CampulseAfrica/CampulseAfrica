@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { colors, spacing, borderRadius } from '../theme';
+import { colors as defaultColors, spacing, borderRadius, useTheme } from '../theme';
 import { ChevronLeft, Search, ChevronDown, ChevronUp } from 'lucide-react-native';
 
 const FAQS = [
@@ -45,6 +45,7 @@ const FAQS = [
 
 export default function HelpSupportScreen() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
@@ -53,26 +54,26 @@ export default function HelpSupportScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.backButton}>
           <ChevronLeft color={colors.textPrimary} size={24} />
         </Pressable>
-        <Text style={styles.headerTitle}>Help & Support</Text>
+        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Help & Support</Text>
         <View style={{ width: 24 }} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.pageTitle}>How can we help you?</Text>
+        <Text style={[styles.pageTitle, { color: colors.textPrimary }]}>How can we help you?</Text>
 
         {/* Search */}
-        <View style={styles.searchContainer}>
+        <View style={[styles.searchContainer, { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: isDark ? 1 : 0 }]}>
           <Search color={colors.textSecondary} size={20} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: colors.textPrimary }]}
             placeholder="Find question"
-            placeholderTextColor={colors.textSecondary}
+            placeholderTextColor={colors.textTertiary}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -83,12 +84,12 @@ export default function HelpSupportScreen() {
           {filteredFaqs.map((faq, index) => {
             const isExpanded = expandedIndex === index;
             return (
-              <View key={index} style={styles.faqItemWrapper}>
+              <View key={index} style={[styles.faqItemWrapper, { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: isDark ? 1 : 0 }]}>
                 <Pressable
-                  style={[styles.faqItem, isExpanded && styles.faqItemExpanded]}
+                  style={[styles.faqItem, isExpanded && [styles.faqItemExpanded, { borderBottomColor: colors.border }]]}
                   onPress={() => setExpandedIndex(isExpanded ? null : index)}
                 >
-                  <Text style={styles.faqQuestion}>{faq.question}</Text>
+                  <Text style={[styles.faqQuestion, { color: colors.textPrimary }]}>{faq.question}</Text>
                   {isExpanded ? (
                     <ChevronUp color={colors.textSecondary} size={20} />
                   ) : (
@@ -96,8 +97,8 @@ export default function HelpSupportScreen() {
                   )}
                 </Pressable>
                 {isExpanded && (
-                  <View style={styles.faqAnswerContainer}>
-                    <Text style={styles.faqAnswer}>{faq.answer}</Text>
+                  <View style={[styles.faqAnswerContainer, { backgroundColor: colors.surfaceElevated }]}>
+                    <Text style={[styles.faqAnswer, { color: colors.textSecondary }]}>{faq.answer}</Text>
                   </View>
                 )}
               </View>
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
   },
   scrollContent: {
     paddingBottom: spacing['4xl'],
@@ -136,7 +137,7 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
     marginHorizontal: spacing.lg,
     marginTop: spacing.xl,
     marginBottom: spacing.md,
@@ -160,7 +161,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: spacing.sm,
     fontSize: 15,
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
   },
   faqList: {
     marginHorizontal: spacing.lg,
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
   },
   faqQuestion: {
     fontSize: 15,
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
     flex: 1,
     paddingRight: spacing.sm,
   },
@@ -198,7 +199,7 @@ const styles = StyleSheet.create({
   },
   faqAnswer: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: defaultColors.textSecondary,
     lineHeight: 20,
   },
 });

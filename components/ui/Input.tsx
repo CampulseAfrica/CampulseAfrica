@@ -6,7 +6,7 @@ import {
   StyleSheet,
   KeyboardTypeOptions,
 } from 'react-native';
-import { colors } from '../../theme/colors';
+import { colors as defaultColors, useTheme } from '../../theme';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 import { borderRadius } from '../../theme/borderRadius';
@@ -30,6 +30,7 @@ export const Input: React.FC<InputProps> = ({
   secureTextEntry = false,
   keyboardType = 'default',
 }) => {
+  const { colors } = useTheme();
   const [isFocused, setIsFocused] = useState(false);
 
   const borderColor = error
@@ -40,9 +41,16 @@ export const Input: React.FC<InputProps> = ({
 
   return (
     <View style={styles.container}>
-      {label ? <Text style={styles.label}>{label}</Text> : null}
+      {label ? <Text style={[styles.label, { color: colors.textPrimary }]}>{label}</Text> : null}
       <TextInput
-        style={[styles.input, { borderColor }]}
+        style={[
+          styles.input,
+          {
+            borderColor,
+            color: colors.textPrimary,
+            backgroundColor: colors.surface,
+          },
+        ]}
         placeholder={placeholder}
         placeholderTextColor={colors.textTertiary}
         value={value}
@@ -52,7 +60,7 @@ export const Input: React.FC<InputProps> = ({
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
       />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <Text style={[styles.error, { color: colors.error }]}>{error}</Text> : null}
     </View>
   );
 };
@@ -64,7 +72,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: typography.bodySemibold.fontSize,
     fontWeight: typography.bodySemibold.fontWeight,
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
     marginBottom: spacing.sm,
   },
   input: {
@@ -74,13 +82,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     fontSize: typography.body.fontSize,
     fontWeight: typography.body.fontWeight,
-    color: colors.textPrimary,
-    backgroundColor: colors.surface,
+    color: defaultColors.textPrimary,
+    backgroundColor: defaultColors.surface,
   },
   error: {
     fontSize: typography.caption.fontSize,
     fontWeight: typography.caption.fontWeight,
-    color: colors.error,
+    color: defaultColors.error,
     marginTop: spacing.xs,
   },
 });

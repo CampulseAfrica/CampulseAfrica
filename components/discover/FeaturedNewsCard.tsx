@@ -6,7 +6,7 @@ import {
   Pressable,
   StyleSheet,
 } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 import { borderRadius } from '../../theme/borderRadius';
@@ -23,33 +23,46 @@ export const FeaturedNewsCard: React.FC<FeaturedNewsCardProps> = ({
   onBookmark,
   onPress,
 }) => {
+  const { colors } = useTheme();
+
   return (
     <Pressable
       onPress={() => onPress?.(item)}
       style={({ pressed }) => [
         styles.card,
+        { backgroundColor: colors.surface },
         pressed && styles.pressed,
       ]}
     >
       <Image
         source={{ uri: item.image }}
-        style={styles.heroImage}
+        style={[styles.heroImage, { backgroundColor: colors.skeleton }]}
         resizeMode="cover"
       />
 
       <View style={styles.body}>
-        <Text style={styles.headline} numberOfLines={2}>
+        <Text
+          style={[styles.headline, { color: colors.textPrimary }]}
+          numberOfLines={2}
+        >
           {item.title}
         </Text>
-        <Text style={styles.description} numberOfLines={3}>
+        <Text
+          style={[styles.description, { color: colors.textSecondary }]}
+          numberOfLines={3}
+        >
           {item.description}
         </Text>
 
         <View style={styles.footer}>
           <View style={styles.footerInfo}>
-            <Text style={styles.timeText}>{item.timeAgo}</Text>
-            <View style={styles.dot} />
-            <Text style={styles.categoryText}>{item.category}</Text>
+            <Text style={[styles.timeText, { color: colors.textTertiary }]}>
+              {item.timeAgo}
+            </Text>
+            <View style={[styles.dot, { backgroundColor: colors.textTertiary }]} />
+            <Text style={[styles.categoryText, { color: colors.primary }]}>
+              {item.category}
+            </Text>
           </View>
           <Pressable
             onPress={() => onBookmark(item)}
@@ -68,7 +81,6 @@ export const FeaturedNewsCard: React.FC<FeaturedNewsCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
     borderRadius: borderRadius.lg,
     marginHorizontal: spacing.lg,
     marginBottom: spacing.lg,
@@ -85,7 +97,6 @@ const styles = StyleSheet.create({
   heroImage: {
     width: '100%',
     height: 180,
-    backgroundColor: colors.skeleton,
   },
   body: {
     padding: spacing.lg,
@@ -93,13 +104,11 @@ const styles = StyleSheet.create({
   headline: {
     fontSize: typography.h4.fontSize,
     fontWeight: typography.h4.fontWeight,
-    color: colors.textPrimary,
     marginBottom: spacing.sm,
   },
   description: {
     fontSize: typography.body.fontSize,
     fontWeight: typography.body.fontWeight,
-    color: colors.textSecondary,
     lineHeight: typography.body.lineHeight,
     marginBottom: spacing.md,
   },
@@ -115,19 +124,16 @@ const styles = StyleSheet.create({
   timeText: {
     fontSize: typography.caption.fontSize,
     fontWeight: typography.caption.fontWeight,
-    color: colors.textTertiary,
   },
   dot: {
     width: 3,
     height: 3,
     borderRadius: 1.5,
-    backgroundColor: colors.textTertiary,
     marginHorizontal: spacing.sm,
   },
   categoryText: {
     fontSize: typography.caption.fontSize,
     fontWeight: typography.captionSemibold.fontWeight,
-    color: colors.primary,
   },
   bookmarkIcon: {
     fontSize: 20,

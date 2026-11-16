@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { colors, spacing, borderRadius, typography } from '../theme';
+import { colors as defaultColors, spacing, borderRadius, typography, useTheme } from '../theme';
 import { useAuthStore } from '../store';
 import {
   ChevronLeft,
@@ -28,7 +28,19 @@ import {
 export default function SettingsScreen() {
   const router = useRouter();
   const { currentUser, logout } = useAuthStore();
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { isDark, toggleTheme, colors } = useTheme();
+  const [switchVal, setSwitchVal] = useState(isDark);
+
+  useEffect(() => {
+    setSwitchVal(isDark);
+  }, [isDark]);
+
+  const handleToggleTheme = (val: boolean) => {
+    setSwitchVal(val);
+    requestAnimationFrame(() => {
+      toggleTheme();
+    });
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -36,96 +48,96 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.backButton}>
           <ChevronLeft color={colors.textPrimary} size={24} />
         </Pressable>
-        <Text style={styles.headerTitle}>Settings</Text>
+        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Settings</Text>
         <View style={{ width: 24 }} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Profile Card */}
         {currentUser && (
-          <View style={styles.profileCard}>
+          <View style={[styles.profileCard, { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: isDark ? 1 : 0 }]}>
             <Image source={{ uri: currentUser.avatar }} style={styles.profileAvatar} />
             <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>{currentUser.fullName}</Text>
-              <Text style={styles.profileSubtitle}>{currentUser.faculty} student</Text>
+              <Text style={[styles.profileName, { color: colors.textPrimary }]}>{currentUser.fullName}</Text>
+              <Text style={[styles.profileSubtitle, { color: colors.textSecondary }]}>{currentUser.faculty} student</Text>
             </View>
           </View>
         )}
 
-        <Text style={styles.sectionTitle}>Other Settings</Text>
+        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Other Settings</Text>
 
         {/* Settings List */}
-        <View style={styles.settingsList}>
+        <View style={[styles.settingsList, { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: isDark ? 1 : 0 }]}>
           
           <Pressable style={styles.settingItem}>
             <View style={styles.settingItemLeft}>
               <UserIcon color={colors.textSecondary} size={20} />
-              <Text style={styles.settingItemText}>Profile Details</Text>
+              <Text style={[styles.settingItemText, { color: colors.textPrimary }]}>Profile Details</Text>
             </View>
           </Pressable>
 
           <Pressable style={styles.settingItem}>
             <View style={styles.settingItemLeft}>
               <Lock color={colors.textSecondary} size={20} />
-              <Text style={styles.settingItemText}>Privacy & Security</Text>
+              <Text style={[styles.settingItemText, { color: colors.textPrimary }]}>Privacy & Security</Text>
             </View>
           </Pressable>
 
           <View style={styles.settingItem}>
             <View style={styles.settingItemLeft}>
               <Moon color={colors.textSecondary} size={20} />
-              <Text style={styles.settingItemText}>Dark Mode</Text>
+              <Text style={[styles.settingItemText, { color: colors.textPrimary }]}>Dark Mode</Text>
             </View>
             <Switch
-              value={isDarkMode}
-              onValueChange={setIsDarkMode}
-              trackColor={{ false: '#E0E0E0', true: colors.primary }}
-              thumbColor={isDarkMode ? '#FFF' : '#FFF'}
+              value={switchVal}
+              onValueChange={handleToggleTheme}
+              trackColor={{ false: isDark ? '#3E3E50' : '#E0E0E0', true: colors.primary }}
+              thumbColor={'#FFFFFF'}
             />
           </View>
 
           <Pressable style={styles.settingItem}>
             <View style={styles.settingItemLeft}>
               <Bookmark color={colors.textSecondary} size={20} />
-              <Text style={styles.settingItemText}>Saved Post</Text>
+              <Text style={[styles.settingItemText, { color: colors.textPrimary }]}>Saved Post</Text>
             </View>
           </Pressable>
 
           <Pressable style={styles.settingItem}>
             <View style={styles.settingItemLeft}>
               <Info color={colors.textSecondary} size={20} />
-              <Text style={styles.settingItemText}>About Application</Text>
+              <Text style={[styles.settingItemText, { color: colors.textPrimary }]}>About Application</Text>
             </View>
           </Pressable>
 
         </View>
 
-        <View style={[styles.settingsList, { marginTop: spacing.md }]}>
+        <View style={[styles.settingsList, { marginTop: spacing.md, backgroundColor: colors.surface, borderColor: colors.border, borderWidth: isDark ? 1 : 0 }]}>
           
           <Pressable style={styles.settingItem} onPress={() => router.push('/help')}>
             <View style={styles.settingItemLeft}>
               <HelpCircle color={colors.textSecondary} size={20} />
-              <Text style={styles.settingItemText}>Help & Support</Text>
+              <Text style={[styles.settingItemText, { color: colors.textPrimary }]}>Help & Support</Text>
             </View>
           </Pressable>
 
           <Pressable style={styles.settingItem}>
             <View style={styles.settingItemLeft}>
               <Fingerprint color={colors.textSecondary} size={20} />
-              <Text style={styles.settingItemText}>Biometric Authentication</Text>
+              <Text style={[styles.settingItemText, { color: colors.textPrimary }]}>Biometric Authentication</Text>
             </View>
           </Pressable>
 
           <Pressable style={styles.settingItem}>
             <View style={styles.settingItemLeft}>
               <FileText color={colors.textSecondary} size={20} />
-              <Text style={styles.settingItemText}>Terms & Privacy Policy</Text>
+              <Text style={[styles.settingItemText, { color: colors.textPrimary }]}>Terms & Privacy Policy</Text>
             </View>
           </Pressable>
 
@@ -161,7 +173,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
   },
   scrollContent: {
     paddingBottom: spacing['4xl'],
@@ -185,7 +197,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: colors.surface,
+    backgroundColor: '#E0E0E0',
   },
   profileInfo: {
     flex: 1,
@@ -193,17 +205,17 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
   },
   profileSubtitle: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: defaultColors.textSecondary,
     marginTop: 2,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
     marginLeft: spacing.lg,
     marginTop: spacing.xl,
     marginBottom: spacing.sm,
@@ -233,6 +245,6 @@ const styles = StyleSheet.create({
   },
   settingItemText: {
     fontSize: 16,
-    color: colors.textPrimary,
+    color: defaultColors.textPrimary,
   },
 });

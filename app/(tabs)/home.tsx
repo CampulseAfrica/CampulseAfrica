@@ -4,284 +4,295 @@ import {
   Text,
   StyleSheet,
   Pressable,
-  Image,
   RefreshControl,
   Modal,
-  FlatList,
-  Dimensions,
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
-import Reanimated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { colors, spacing, borderRadius } from '../../theme';
+import { Search } from 'lucide-react-native';
+import { useTheme } from '../../theme';
 import { useAuthStore, useCacheStore, useToastStore } from '../../store';
 import { useGuestGate, useNetworkStatus } from '../../hooks';
 import { postService } from '../../services';
 import { Post, VoteType, FeedTab } from '../../types';
 import { CampulseLogo } from '../../components/ui/Logo';
-import { SearchIcon, TrueIcon, MisleadingIcon, FalseIcon, CommentsIcon, ShareIcon, VerifiedBadge } from '../../components/ui/Icons';
-import { Skeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { PostCard } from '../../components/post/PostCard';
-
-const { width } = Dimensions.get('window');
-
-const FEED_TABS: { key: FeedTab; label: string }[] = [
-  { key: 'mySchool', label: 'My School' },
-  { key: 'otherCampus', label: 'Other campus' },
-];
-
-const FeedTabContent = ({ tab, isActive }: { tab: FeedTab; isActive: boolean }) => {
-  const { selectedUniversity, isAuthenticated } = useAuthStore();
-  const { gateAction } = useGuestGate();
-  const { checkConnection } = useNetworkStatus();
-  const showToast = useToastStore((s) => s.show);
-  const cachedPosts = useCacheStore((s) =>
-    tab === 'mySchool' ? s.mySchoolPosts : s.otherCampusPosts
-  );
-  const setCachedPosts = useCacheStore((s) =>
-    tab === 'mySchool' ? s.setMySchoolPosts : s.setOtherCampusPosts
-  );
-  const router = useRouter();
-  
-  const [refreshing, setRefreshing] = useState(false);
-  const [loading, setLoading] = useState(cachedPosts.length === 0); // Skip skeleton if cache exists
-  const [posts, setPosts] = useState<Post[]>(cachedPosts); // Initialize with cached data
-  const hasFetched = useRef(false);
-
-  useEffect(() => {
-    if (!isActive && !hasFetched.current) return;
-    hasFetched.current = true;
-    
-    let isMounted = true;
-    if (posts.length === 0) setLoading(true);
-
-    postService.getPosts(tab, selectedUniversity?.name)
-      .then((newPosts) => {
-        if (isMounted) {
-          setPosts(newPosts);
-          setCachedPosts(newPosts);
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        // Network failed — keep showing cached data
-        if (isMounted) setLoading(false);
-      });
-    return () => { isMounted = false; };
-  }, [isActive, tab, selectedUniversity]);
-
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      const newPosts = await postService.getPosts(tab, selectedUniversity?.name);
-      setPosts(newPosts);
-      setCachedPosts(newPosts);
-    } catch {
-      showToast('No internet connection');
-    }
-    setRefreshing(false);
-  }, [tab, selectedUniversity]);
-
-  const offlineGate = useCallback(async (action: () => void) => {
-    const connected = await checkConnection();
-    if (!connected) {
-      showToast('No internet connection');
-      return;
-    }
-    action();
-  }, [checkConnection, showToast]);
-
-  const handleVote = (postId: string, voteType: VoteType) => {
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === postId
-          ? {
-              ...p,
-              userVote: p.userVote === voteType ? null : voteType,
-              trueCount: voteType === 'true'
-                ? p.userVote === 'true' ? p.trueCount - 1 : p.trueCount + 1
-                : p.trueCount,
-              misleadingCount: voteType === 'misleading'
-                ? p.userVote === 'misleading' ? p.misleadingCount - 1 : p.misleadingCount + 1
-                : p.misleadingCount,
-              falseCount: voteType === 'false'
-                ? p.userVote === 'false' ? p.falseCount - 1 : p.falseCount + 1
-                : p.falseCount,
-            }
-          : p
-      )
-    );
-  };
-
-  if (loading) {
-    return (
-      <View style={[styles.feedContent, { width }]}>
-        {Array.from({ length: 3 }).map((_, idx) => (
-          <View key={idx} style={[styles.postCard, { marginBottom: spacing.sm }]}>
-            <View style={styles.postHeader}>
-              <Skeleton width={44} height={44} borderRadius={22} style={{ marginRight: spacing.md }} />
-              <View style={{ flex: 1, gap: 4 }}>
-                <Skeleton width="40%" height={14} />
-                <Skeleton width="25%" height={12} />
-              </View>
-            </View>
-            <Skeleton width="100%" height={14} style={{ marginBottom: 4 }} />
-            <Skeleton width="80%" height={14} style={{ marginBottom: spacing.md }} />
-            <Skeleton width="100%" height={200} borderRadius={borderRadius.md} style={{ marginBottom: spacing.md }} />
-          </View>
-        ))}
-      </View>
-    );
-  }
-
-  return (
-    <View style={{ width, flex: 1 }}>
-      <FlashList
-        data={posts}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <PostCard
-            post={item}
-            onVote={(postId, voteType) => gateAction(() => offlineGate(() => handleVote(postId, voteType)))}
-            onPress={(postId) => router.push(`/post/${postId}`)}
-            onFollow={() => gateAction(() => offlineGate(() => {}))}
-            onComment={() => gateAction(() => offlineGate(() => {}))}
-            onShare={() => gateAction(() => offlineGate(() => {}))}
-            isGuest={!isAuthenticated}
-          />
-        )}
-        contentContainerStyle={styles.feedContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colors.primary}
-          />
-        }
-        ListEmptyComponent={
-          <EmptyState
-            icon="📭"
-            title="No posts yet"
-            subtitle="Be the first to share something on campus!"
-          />
-        }
-        ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
-      />
-    </View>
-  );
-};
+import { HomeTabSwitcher } from '../../components/home/HomeTabSwitcher';
+import { CampusFilterBar } from '../../components/home/CampusFilterBar';
+import { Skeleton } from '../../components/ui/Skeleton';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { selectedUniversity, isAuthenticated } = useAuthStore();
+  const { colors, isDark } = useTheme();
+  const { currentUser, selectedUniversity, isAuthenticated } = useAuthStore();
   const { gateAction, showGateModal, dismissGateModal } = useGuestGate();
+  const { checkConnection } = useNetworkStatus();
+  const showToast = useToastStore((s) => s.show);
+
+  // Active feed tab: 'mySchool' | 'otherCampus'
   const [activeTab, setActiveTab] = useState<FeedTab>('mySchool');
-  
-  const contentListRef = useRef<FlatList>(null);
-  const tabLayouts = useRef<{ [key: string]: { x: number; width: number } }>({});
-  const isTappingTab = useRef(false);
 
-  const indicatorLeft = useSharedValue(0);
-  const indicatorWidth = useSharedValue(0);
+  // Campus filters for "Other campuses"
+  const [campuses, setCampuses] = useState<string[]>(['All campuses']);
+  const [selectedCampus, setSelectedCampus] = useState<string>('All campuses');
 
-  const animatedIndicatorStyle = useAnimatedStyle(() => {
-    return {
-      left: withSpring(indicatorLeft.value, { mass: 1, damping: 15, stiffness: 120 }),
-      width: withSpring(indicatorWidth.value, { mass: 1, damping: 15, stiffness: 120 }),
-    };
-  });
+  // Cache store
+  const cachedPosts = useCacheStore((s) =>
+    activeTab === 'mySchool' ? s.mySchoolPosts : s.otherCampusPosts
+  );
+  const setCachedPosts = useCacheStore((s) =>
+    activeTab === 'mySchool' ? s.setMySchoolPosts : s.setOtherCampusPosts
+  );
 
-  const syncTabBar = useCallback((key: FeedTab) => {
-    setActiveTab(key);
-    const layout = tabLayouts.current[key];
-    if (layout) {
-      indicatorLeft.value = layout.x + layout.width * 0.2;
-      indicatorWidth.value = layout.width * 0.6;
+  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(cachedPosts.length === 0);
+  const [posts, setPosts] = useState<Post[]>(cachedPosts);
+
+  // Sync posts immediately from cache when activeTab switches
+  useEffect(() => {
+    const currentCached = activeTab === 'mySchool'
+      ? useCacheStore.getState().mySchoolPosts
+      : useCacheStore.getState().otherCampusPosts;
+    if (currentCached.length > 0) {
+      setPosts(currentCached);
+      setLoading(false);
+    } else {
+      setLoading(true);
     }
+  }, [activeTab]);
+
+  // Fetch available campuses on mount
+  useEffect(() => {
+    let isMounted = true;
+    postService.getCampusFilters().then((list) => {
+      if (isMounted && list && list.length > 0) {
+        setCampuses(list);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const handleTabLayout = (key: FeedTab, layout: { x: number; width: number }) => {
-    tabLayouts.current[key] = layout;
-    if (key === activeTab) {
-      indicatorLeft.value = layout.x + layout.width * 0.2;
-      indicatorWidth.value = layout.width * 0.6;
+  // Fetch posts whenever activeTab, selectedCampus, or selectedUniversity changes
+  const fetchPosts = useCallback(async (showLoadingIndicator = true) => {
+    if (showLoadingIndicator && posts.length === 0) {
+      setLoading(true);
     }
+    try {
+      const data = await postService.getPosts(
+        activeTab,
+        selectedUniversity?.name,
+        activeTab === 'otherCampus' ? selectedCampus : undefined
+      );
+      setPosts(data);
+      setCachedPosts(data);
+    } catch (err) {
+      console.error('[HomeScreen] Error fetching posts:', err);
+      showToast('Could not refresh feed');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [activeTab, selectedCampus, selectedUniversity, posts.length, setCachedPosts, showToast]);
+
+  useEffect(() => {
+    fetchPosts(true);
+  }, [activeTab, selectedCampus, selectedUniversity]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchPosts(false);
+  }, [fetchPosts]);
+
+  const offlineGate = useCallback(
+    async (action: () => void) => {
+      const connected = await checkConnection();
+      if (!connected) {
+        showToast('No internet connection');
+        return;
+      }
+      action();
+    },
+    [checkConnection, showToast]
+  );
+
+  const handleVote = (postId: string, voteType: VoteType) => {
+    // Users cannot vote on their own posts
+    const targetPost = posts.find((p) => p.id === postId);
+    if (targetPost && currentUser && targetPost.user.id === currentUser.id) {
+      return;
+    }
+
+    // Optimistic vote update
+    setPosts((prev) =>
+      prev.map((p) => {
+        if (p.id !== postId) return p;
+        const currentVote = p.userVote;
+        const isRemoving = currentVote === voteType;
+        const newVote = isRemoving ? null : voteType;
+
+        let trueChange = 0;
+        let misleadingChange = 0;
+        let falseChange = 0;
+
+        if (currentVote === 'true') trueChange -= 1;
+        if (currentVote === 'misleading') misleadingChange -= 1;
+        if (currentVote === 'false') falseChange -= 1;
+
+        if (newVote === 'true') trueChange += 1;
+        if (newVote === 'misleading') misleadingChange += 1;
+        if (newVote === 'false') falseChange += 1;
+
+        return {
+          ...p,
+          userVote: newVote,
+          trueCount: Math.max(0, p.trueCount + trueChange),
+          misleadingCount: Math.max(0, p.misleadingCount + misleadingChange),
+          falseCount: Math.max(0, p.falseCount + falseChange),
+        };
+      })
+    );
+
+    // Call service in background
+    postService.votePost(postId, voteType).catch(() => {
+      // Revert if error
+      fetchPosts(false);
+    });
   };
 
-  const handleTabPress = (key: FeedTab, index: number) => {
-    isTappingTab.current = true;
-    syncTabBar(key);
-    contentListRef.current?.scrollToIndex({ index, animated: true });
+  const handleFollow = (userId: string) => {
+    postService.toggleFollow(userId).catch(() => {});
   };
 
-  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
-  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
-    if (viewableItems.length > 0 && !isTappingTab.current) {
-      syncTabBar(viewableItems[0].item.key);
-    }
-  }).current;
+  const handleBookmark = (postId: string) => {
+    postService.bookmarkPost(postId).catch(() => {});
+  };
+
+  const handleShare = (postId: string) => {
+    postService.sharePost(postId).catch(() => {});
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
-        <CampulseLogo width={131} height={26} />
-        <Pressable onPress={() => router.push('/search')}>
-          <SearchIcon />
+        <CampulseLogo height={32} />
+        <Pressable
+          onPress={() => router.push('/search')}
+          style={({ pressed }) => [
+            styles.searchButton,
+            { backgroundColor: isDark ? colors.surfaceElevated : '#F3F4F6' },
+            pressed && styles.pressed,
+          ]}
+        >
+          <Search color={colors.primary} size={20} strokeWidth={2.2} />
         </Pressable>
       </View>
 
-      {/* Feed Tabs */}
-      <View style={styles.feedTabs}>
-        {FEED_TABS.map((tab, index) => (
-          <Pressable
-            key={tab.key}
-            style={styles.feedTab}
-            onPress={() => handleTabPress(tab.key, index)}
-            onLayout={(e) => handleTabLayout(tab.key, e.nativeEvent.layout)}
-          >
-            <Text
+      {/* Top Segmented Tab Switcher ("My school" vs "Other campuses") */}
+      <HomeTabSwitcher
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          if (tab === 'otherCampus') {
+            setSelectedCampus('All campuses');
+          }
+        }}
+      />
+
+      {/* Campus Filter Pills Bar (Only shown on "Other campuses") */}
+      {activeTab === 'otherCampus' && (
+        <CampusFilterBar
+          campuses={campuses}
+          selectedCampus={selectedCampus}
+          onSelectCampus={(c) => setSelectedCampus(c)}
+        />
+      )}
+
+      {/* Feed List */}
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          {Array.from({ length: 2 }).map((_, idx) => (
+            <View
+              key={idx}
               style={[
-                styles.feedTabText,
-                activeTab === tab.key && styles.feedTabTextActive,
+                styles.skeletonCard,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: isDark ? colors.border : '#E5E7EB',
+                },
               ]}
             >
-              {tab.label}
-            </Text>
-          </Pressable>
-        ))}
-        <Reanimated.View
-          style={[styles.feedTabIndicator, animatedIndicatorStyle]}
+              <View style={styles.skeletonHeader}>
+                <Skeleton width={40} height={40} borderRadius={20} />
+                <View style={{ flex: 1, marginLeft: 12, gap: 6 }}>
+                  <Skeleton width="45%" height={14} borderRadius={4} />
+                  <Skeleton width="30%" height={12} borderRadius={4} />
+                </View>
+              </View>
+              <Skeleton width="100%" height={14} borderRadius={4} style={{ marginBottom: 6 }} />
+              <Skeleton width="75%" height={14} borderRadius={4} style={{ marginBottom: 14 }} />
+              <Skeleton width="100%" height={180} borderRadius={12} style={{ marginBottom: 14 }} />
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <Skeleton width="31%" height={48} borderRadius={10} />
+                <Skeleton width="31%" height={48} borderRadius={10} />
+                <Skeleton width="31%" height={48} borderRadius={10} />
+              </View>
+            </View>
+          ))}
+        </View>
+      ) : (
+        <FlashList
+          data={posts}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <PostCard
+              post={item}
+              onVote={(postId, voteType) =>
+                gateAction(() => offlineGate(() => handleVote(postId, voteType)))
+              }
+              onPress={(postId) => router.push(`/post/${postId}`)}
+              onFollow={(userId) =>
+                gateAction(() => offlineGate(() => handleFollow(userId)))
+              }
+              onBookmark={(postId) =>
+                gateAction(() => offlineGate(() => handleBookmark(postId)))
+              }
+              onComment={(postId) =>
+                gateAction(() => router.push(`/post/${postId}`))
+              }
+              onShare={(postId) =>
+                gateAction(() => offlineGate(() => handleShare(postId)))
+              }
+              isGuest={!isAuthenticated}
+            />
+          )}
+          contentContainerStyle={styles.feedContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.primary}
+            />
+          }
+          ListEmptyComponent={
+            <EmptyState
+              icon="📭"
+              title="No posts found"
+              subtitle={
+                activeTab === 'otherCampus' && selectedCampus !== 'All campuses'
+                  ? `No posts from ${selectedCampus} yet.`
+                  : 'Be the first to share something on campus!'
+              }
+            />
+          }
+          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
         />
-      </View>
-
-      {/* Posts Feed */}
-      <FlatList
-        ref={contentListRef}
-        data={FEED_TABS}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.key}
-        getItemLayout={(data, index) => ({
-          length: width,
-          offset: width * index,
-          index,
-        })}
-        renderItem={({ item }) => (
-          <FeedTabContent tab={item.key} isActive={activeTab === item.key} />
-        )}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewabilityConfig}
-        onScrollAnimationEnd={() => { isTappingTab.current = false; }}
-        onMomentumScrollEnd={() => { isTappingTab.current = false; }}
-        initialNumToRender={1}
-        maxToRenderPerBatch={1}
-        windowSize={3}
-      />
+      )}
 
       {/* Guest Gate Modal */}
       <Modal
@@ -292,13 +303,24 @@ export default function HomeScreen() {
       >
         <View style={styles.modalOverlay}>
           <Pressable style={styles.modalBackdrop} onPress={dismissGateModal} />
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Create an account to continue</Text>
-            <Text style={styles.modalSubtitle}>
+          <View
+            style={[
+              styles.modalContent,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                borderWidth: isDark ? 1 : 0,
+              },
+            ]}
+          >
+            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+              Create an account to continue
+            </Text>
+            <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
               Sign up to vote, comment, post, and connect with your campus community.
             </Text>
             <Pressable
-              style={styles.modalSignUp}
+              style={[styles.modalSignUp, { backgroundColor: colors.primary }]}
               onPress={() => {
                 dismissGateModal();
                 router.push('/(auth)/sign-up');
@@ -307,7 +329,9 @@ export default function HomeScreen() {
               <Text style={styles.modalSignUpText}>Sign Up</Text>
             </Pressable>
             <Pressable style={styles.modalLater} onPress={dismissGateModal}>
-              <Text style={styles.modalLaterText}>Maybe Later</Text>
+              <Text style={[styles.modalLaterText, { color: colors.textSecondary }]}>
+                Maybe Later
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -319,243 +343,85 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-  },
-  headerTitle: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: colors.primary,
-    letterSpacing: -0.5,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 10,
   },
   searchButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primaryLight,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  searchIcon: {
-    fontSize: 18,
-  },
-  feedTabs: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    paddingHorizontal: spacing.lg,
-  },
-  feedTab: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    position: 'relative',
-  },
-  feedTabText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: colors.textSecondary,
-  },
-  feedTabTextActive: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  feedTabIndicator: {
-    position: 'absolute',
-    bottom: -1,
-    left: 0,
-    height: 3,
-    backgroundColor: colors.primary,
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2,
   },
   feedContent: {
-    padding: spacing.lg,
-    paddingBottom: 100, // Extra padding to allow scrolling past the floating tab bar
+    paddingBottom: 80,
   },
-  // PostCard styles
-  postCard: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+  loadingContainer: {
+    paddingHorizontal: 16,
+    gap: 12,
   },
-  postHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    marginRight: spacing.md,
-  },
-  postUserInfo: {
-    flex: 1,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  userName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
-  verifiedBadge: {
-    fontSize: 12,
-    color: colors.primary,
-    backgroundColor: colors.primaryLight,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    textAlign: 'center',
-    lineHeight: 18,
-    overflow: 'hidden',
-  },
-  universityText: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  followButton: {
+  skeletonCard: {
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: colors.primary,
-    borderRadius: borderRadius['3xl'],
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xs,
+    padding: 16,
   },
-  followButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.primary,
-  },
-  postContent: {
-    fontSize: 14,
-    color: colors.textPrimary,
-    lineHeight: 21,
-    marginBottom: spacing.md,
-  },
-  postImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: borderRadius.md,
-    marginBottom: spacing.md,
-    resizeMode: 'cover',
-  },
-  voteContainer: {
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  voteButton: {
+  skeletonHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: borderRadius['3xl'],
-    paddingVertical: spacing.sm,
-    gap: spacing.sm,
+    marginBottom: 12,
   },
-  voteButtonActive: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary,
-  },
-  voteIcon: {
-    fontSize: 16,
-    color: colors.textSecondary,
-  },
-  voteIconActive: {
-    color: colors.primary,
-  },
-  voteLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: colors.textSecondary,
-  },
-  voteLabelActive: {
-    color: colors.primary,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  stat: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  statIcon: {
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
-  statText: {
-    fontSize: 13,
-    color: colors.textSecondary,
-  },
-  // Guest Gate Modal
   modalOverlay: {
-    ...StyleSheet.absoluteFill,
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
-    zIndex: 100,
   },
   modalBackdrop: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: colors.overlay,
+    flex: 1,
   },
   modalContent: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: borderRadius.xl,
-    borderTopRightRadius: borderRadius.xl,
-    padding: spacing['3xl'],
-    paddingBottom: spacing['5xl'],
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 40,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: colors.textPrimary,
+    marginBottom: 8,
     textAlign: 'center',
-    marginBottom: spacing.sm,
   },
   modalSubtitle: {
     fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
     lineHeight: 20,
-    marginBottom: spacing['2xl'],
+    textAlign: 'center',
+    marginBottom: 24,
   },
   modalSignUp: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.lg,
-    borderRadius: borderRadius['3xl'],
+    borderRadius: 25,
+    paddingVertical: 14,
     alignItems: 'center',
-    marginBottom: spacing.md,
+    marginBottom: 12,
   },
   modalSignUpText: {
-    color: colors.textInverse,
+    color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   modalLater: {
-    paddingVertical: spacing.md,
+    paddingVertical: 10,
     alignItems: 'center',
   },
   modalLaterText: {
-    color: colors.textSecondary,
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  pressed: {
+    opacity: 0.8,
   },
 });

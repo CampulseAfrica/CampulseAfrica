@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, ViewStyle } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme';
 import { borderRadius as br } from '../../theme/borderRadius';
 
 interface LoadingSkeletonProps {
@@ -14,6 +14,7 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
   height,
   borderRadius = br.sm,
 }) => {
+  const { colors } = useTheme();
   const opacity = useRef(new Animated.Value(0.4)).current;
 
   useEffect(() => {
