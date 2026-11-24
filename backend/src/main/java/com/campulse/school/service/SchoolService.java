@@ -4,6 +4,7 @@ import com.campulse.school.dto.response.SchoolResponse;
 import com.campulse.school.entity.School;
 import com.campulse.school.repository.SchoolRepository;
 import lombok.RequiredArgsConstructor;
+import com.campulse.general.exceptions.ResourceNotFoundException;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,7 +35,7 @@ public class SchoolService {
 
     public SchoolResponse getSchoolById(UUID id){
         School school = schoolRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("School not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("School not found with id: " + id));
 
         return new SchoolResponse(
                 school.getId(),

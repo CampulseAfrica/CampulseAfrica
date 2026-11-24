@@ -39,8 +39,10 @@ public class User extends BaseEntity{
     @Column(nullable = false)
     private String lastName;
 
+    @Column(length = 2048)
     private String profilePicture;
 
+    @Column(length = 500)
     private String bio;
 
     @Enumerated(EnumType.STRING)

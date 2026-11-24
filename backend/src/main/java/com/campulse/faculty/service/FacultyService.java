@@ -5,6 +5,7 @@ import com.campulse.faculty.entity.Faculty;
 import com.campulse.faculty.repository.FacultyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.campulse.general.exceptions.ResourceNotFoundException;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,7 +30,7 @@ public class FacultyService {
 
     public FacultyResponse getFacultyById(UUID id) {
         Faculty faculty = facultyRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Faculty not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Faculty not found"));
 
         return new FacultyResponse(
                 faculty.getId(),

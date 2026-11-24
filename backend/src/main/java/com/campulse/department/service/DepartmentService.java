@@ -3,6 +3,8 @@ package com.campulse.department.service;
 import com.campulse.department.dto.response.DepartmentResponse;
 import com.campulse.department.entity.Department;
 import com.campulse.department.repository.DepartmentRepository;
+import com.campulse.general.exceptions.ResourceNotFoundException;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +31,7 @@ public class DepartmentService {
 
     public DepartmentResponse getDepartmentById(UUID id) {
         Department department = departmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Department not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Department not found"));
 
         return new DepartmentResponse(
                 department.getId(),
